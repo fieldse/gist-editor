@@ -1,5 +1,6 @@
 # VSCode
 **/*.code-workspace
+**/.vscode
 
 # Go stuff
 # Binaries for programs and plugins
