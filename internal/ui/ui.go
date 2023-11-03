@@ -24,7 +24,7 @@ func Startui() {
 	// Title
 	title := widget.NewLabel("Welcome to the Gist editor!")
 	title.TextStyle.Bold = true
-	subLabel := widget.NewLabel("Click View Gists or New Gist below.")
+	subLabel := widget.NewLabel("Click View Gists to see all your gists, or create a new one with New Gist.")
 
 	// Title and welcome text container
 	titleContainer := container.NewVBox(title, subLabel)
@@ -39,7 +39,9 @@ func Startui() {
 	spacer := layout.NewSpacer()
 
 	// Vertical grid layout
-	content := container.New(layout.NewGridLayoutWithRows(3), titleContainer, spacer, buttons)
+	content := container.New(
+		layout.NewGridLayoutWithRows(5), titleContainer, spacer, spacer, spacer, buttons,
+	)
 
 	w.SetContent(content)
 	w.ShowAndRun()
