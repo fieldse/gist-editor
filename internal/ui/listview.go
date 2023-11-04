@@ -1,33 +1,44 @@
 package ui
 
 import (
+	// mockdata "github.com/fieldse/gist-editor/internal/data"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
-// Adds an item to the list
-func addItem() fyne.CanvasObject {
-	// TODO
+// var data = mockdata.MockGistData
+
+var data = []string{"foo", "bar", "baz"}
+
+// FIXME: implement
+func createItem() fyne.CanvasObject {
 	var item fyne.CanvasObject
 	return item
+	// TODO
 }
 
-// Updates a single item in the list
-func updateItem(itemId widget.ListItemID, item fyne.CanvasObject) {
-	// TODO:
+// FIXME: implement updates
+func updateItem(itemId widget.ListItemID, o fyne.CanvasObject) {
+	o.(*widget.Label).SetText(data[itemId])
 }
 
-// Placeholder function for length() argument to NewList
-func listLength() int { return 14 }
+func listLength() int {
+	return len(data)
+}
 
 // Returns a list view widget of all user gists
 func ListWidget() *fyne.Container {
 	title := widget.NewLabel("Your gists")
 	title.TextStyle.Bold = true
 
-	// l := widget.NewLabel("Example Gist")
-	exampleList := widget.NewList(listLength, addItem, updateItem)
+	// List widget
+	var exampleList = widget.NewList(
+		listLength,
+		createItem,
+		updateItem,
+	)
 
 	// Example content widget
 	vBox := container.NewVBox(title, exampleList)
