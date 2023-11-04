@@ -40,7 +40,6 @@ func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
 	b1 := widget.NewButton("View Gists", showList)
 	b2 := widget.NewButton("New Gist", newGist)
 	closeBtn := widget.NewButton("Exit", func() {
-		logger.Debug("exit app")
 		cfg.exit()
 	})
 

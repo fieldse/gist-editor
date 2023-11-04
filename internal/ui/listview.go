@@ -5,7 +5,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // Returns a list view widget of all user gists
@@ -15,13 +14,10 @@ func ListWidget(hide func()) *fyne.Container {
 
 	// Test buttons
 	spacer := layout.NewSpacer()
-	testButton := widget.NewButton("test", func() {
-		logger.Info("button pressed")
-	})
 	okButton := widget.NewButton("ok", hide)
 
 	// Example content widget
-	buttons := container.NewHBox(spacer, okButton, testButton)
+	buttons := container.NewHBox(spacer, okButton)
 	vBox := container.NewVBox(title, spacer, buttons)
 
 	content := container.NewHBox(vBox)
