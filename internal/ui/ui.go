@@ -29,8 +29,7 @@ func (cfg *AppConfig) Print() {
 func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
 
 	// Title
-	title := widget.NewLabel("Welcome to the Gist editor!")
-	title.TextStyle.Bold = true
+	title := TitleText("Welcome to the Gist editor!")
 	subLabel := widget.NewLabel("Click View Gists to see all your gists, or create a new one with New Gist.")
 
 	// Title and welcome text container

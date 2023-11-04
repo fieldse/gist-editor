@@ -9,8 +9,7 @@ import (
 
 // Returns a list view widget of all user gists
 func ListWidget(hide func()) *fyne.Container {
-	title := widget.NewLabel("Your gists")
-	title.TextStyle.Bold = true
+	title := TitleText("Your gists")
 
 	// Test buttons
 	spacer := layout.NewSpacer()
