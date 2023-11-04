@@ -3,28 +3,28 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // Returns a list view widget of all user gists
-func ListWidget() *fyne.Container {
+func ListWidget(hide func()) *fyne.Container {
 	title := widget.NewLabel("Your gists")
 	title.TextStyle.Bold = true
 
 	// Test buttons
+	spacer := layout.NewSpacer()
 	testButton := widget.NewButton("test", func() {
 		logger.Info("button pressed")
 	})
-	okButton := widget.NewButton("ok", func() {
-		logger.Info("OK button pressed")
-	})
+	okButton := widget.NewButton("ok", hide)
 
 	// Example content widget
-	buttons := container.NewHBox(testButton, okButton)
-	vBox := container.NewVBox(title, buttons)
+	buttons := container.NewHBox(spacer, okButton, testButton)
+	vBox := container.NewVBox(title, spacer, buttons)
 
-	content := container.NewHBox(title, vBox)
+	content := container.NewHBox(vBox)
 	return content
 }
 
@@ -33,7 +33,7 @@ func ListWindow(a fyne.App) fyne.Window {
 	w := a.NewWindow("Your Gists")
 	w.Resize(fyne.NewSize(600, 400))
 
-	content := ListWidget()
+	content := ListWidget(w.Hide)
 	w.SetContent(content)
 
 	return w

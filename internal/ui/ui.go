@@ -6,7 +6,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 func newGist() {
@@ -54,16 +53,10 @@ func StartUI() {
 	w.Resize(fyne.NewSize(600, 400))
 
 	// Gists list window
-	l := a.NewWindow("Your Gists")
-	logger.Debug("list window: %+v\n", l)
-	logger.Debug("app: %+v\n", l)
-	listContent := ListWidget()
-
-	logger.Debug("listContent: %+v\n", listContent)
-	l.SetContent(listContent)
+	l := ListWindow(a)
 
 	// Base view window
-	content := BaseView(func() { l.Show() })
+	content := BaseView(l.Show)
 
 	w.SetContent(content)
 	w.ShowAndRun()
