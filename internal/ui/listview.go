@@ -10,9 +10,6 @@ import (
 
 // Returns a list view widget of all user gists
 func ListWidget(hide func()) *fyne.Container {
-	title := TitleText("Your gists")
-
-	// Test buttons
 	spacer := layout.NewSpacer()
 	okButton := widget.NewButton("ok", hide)
 
@@ -32,16 +29,20 @@ func ListWidget(hide func()) *fyne.Container {
 			o.(*widget.Label).SetText(data[i])
 		})
 
-	buttons := container.NewGridWithColumns(3, spacer, spacer, okButton)
-	content := container.NewStack(title, list, buttons)
+	titleContainer := TitleBox("Your Gists")
+	listContainer := container.NewStack(list)
 
+	buttons := ButtonContainer(3, spacer, spacer, okButton)
+
+	// Total content includes title, list section, and buttons
+	content := container.NewBorder(titleContainer, buttons, nil, nil, listContainer)
 	return content
 }
 
 // Return a List view window
 func ListWindow(a fyne.App) fyne.Window {
 	w := a.NewWindow("Your Gists")
-	w.Resize(fyne.NewSize(500, 300))
+	w.Resize(fyne.NewSize(500, 600))
 
 	content := ListWidget(w.Hide)
 	w.SetContent(content)
