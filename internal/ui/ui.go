@@ -60,6 +60,7 @@ func StartUI() {
 
 	w := a.NewWindow("GistEdit")
 	w.Resize(fyne.NewSize(600, 400))
+	w.SetMaster() // master window, when closed closes all other windows
 
 	// Gists list window
 	l := ListWindow(a)
