@@ -9,20 +9,49 @@ import (
 	"github.com/fieldse/gist-editor/internal/logger"
 )
 
-func newGist() {
-	// TODO
-}
-
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
 	BaseWindow   *fyne.Window
 	ListWindow   *fyne.Window
 	showListView func()
 	exit         func()
+	RunUI        func()
 }
 
-func (cfg *AppConfig) Print() {
-	logger.Debug("app config: %+v", cfg)
+var cfg AppConfig
+
+func newGist() {
+	// TODO
+}
+
+// Generate and store the basic UI components
+func (cfg *AppConfig) MakeUI() {
+
+	// Create app and base window
+	a := app.New()
+	w := a.NewWindow("GistEdit")
+	w.Resize(fyne.NewSize(600, 400))
+	w.SetMaster() // master window, when closed closes all other windows
+
+	// Store the exit function
+	cfg.exit = w.Close
+
+	// Create Gists list window
+	l := ListWindow(a)
+	cfg.ListWindow = &l
+
+	// Create base view UI
+	content := BaseView(cfg, l.Show)
+	w.SetContent(content)
+
+	// Store the base view window
+	cfg.BaseWindow = &w
+
+	// Store the Show function for main window
+	cfg.RunUI = func() { w.ShowAndRun() }
+
+	// Store the showListView function
+	cfg.showListView = func() { l.Show() }
 }
 
 // Base view upon opening the app
@@ -54,29 +83,11 @@ func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
 	return content
 }
 
+func (cfg *AppConfig) Print() {
+	logger.Debug("app config: %+v", cfg)
+}
+
 func StartUI() {
-	a := app.New()
-	var cfg AppConfig
-
-	w := a.NewWindow("GistEdit")
-	w.Resize(fyne.NewSize(600, 400))
-	w.SetMaster() // master window, when closed closes all other windows
-
-	// Gists list window
-	l := ListWindow(a)
-
-	// Base view window
-	content := BaseView(&cfg, l.Show)
-
-	// Store to config
-	cfg = AppConfig{
-		BaseWindow:   &w,
-		ListWindow:   &l,
-		showListView: l.Show,
-		exit:         w.Close,
-	}
-
-	w.SetContent(content)
-	w.ShowAndRun()
-
+	cfg.MakeUI()
+	cfg.RunUI()
 }
