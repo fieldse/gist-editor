@@ -17,7 +17,7 @@ type Gist struct {
 	CreateAt time.Time
 }
 
-var exampleGist = Gist{
+var ExampleGist = Gist{
 	ID:       "example-gist",
 	Slug:     "example-gist",
 	Filename: "Example Gist.md",
@@ -27,7 +27,7 @@ var exampleGist = Gist{
 }
 
 func newExampleGist(id int) Gist {
-	e := exampleGist
+	e := ExampleGist
 	e.ID = fmt.Sprintf("example-gist-%d", id)
 	e.Filename = fmt.Sprintf("Example Gist-%d", id)
 	e.Content = e.Content + " -- gist ID: " + e.ID
