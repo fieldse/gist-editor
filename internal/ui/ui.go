@@ -31,6 +31,7 @@ func (cfg *AppConfig) MakeUI() {
 	w := a.NewWindow("GistEdit")
 	w.Resize(fyne.NewSize(600, 400))
 	w.SetMaster() // master window, when closed closes all other windows
+	w.CenterOnScreen()
 
 	// Store the exit function
 	cfg.exit = w.Close

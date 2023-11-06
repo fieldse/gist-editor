@@ -14,10 +14,11 @@ var data = github.ExampleGist
 
 func EditWindow(a fyne.App) fyne.Window {
 	w := a.NewWindow("Edit Gist")
-	w.Resize(fyne.NewSize(500, 600))
+	w.Resize(fyne.NewSize(800, 600))
 
 	content := EditUI(data, w.Hide)
 	w.SetContent(content)
+	w.CenterOnScreen()
 
 	return w
 }

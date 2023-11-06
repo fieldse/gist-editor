@@ -11,7 +11,7 @@ import (
 // Returns a list view widget of all user gists
 func ListWidget(hide func()) *fyne.Container {
 	spacer := layout.NewSpacer()
-	okButton := widget.NewButton("ok", hide)
+	okButton := widget.NewButton("Ok", hide)
 
 	// Example content widget
 	var data []string
@@ -42,10 +42,11 @@ func ListWidget(hide func()) *fyne.Container {
 // Return a List view window
 func ListWindow(a fyne.App) fyne.Window {
 	w := a.NewWindow("Your Gists")
-	w.Resize(fyne.NewSize(500, 600))
+	w.Resize(fyne.NewSize(800, 600))
 
 	content := ListWidget(w.Hide)
 	w.SetContent(content)
+	w.CenterOnScreen()
 
 	return w
 }
