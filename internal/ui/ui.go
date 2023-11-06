@@ -71,14 +71,14 @@ func BaseView(cfg *AppConfig, showList func(), showEdit func()) *fyne.Container 
 	titleContainer := container.NewVBox(title, subLabel)
 
 	// Buttons for "View Gists" and "New Gist"
-	b1 := widget.NewButton("View Gists", showList)
-	b2 := widget.NewButton("New Gist", showEdit)
+	viewGistsButton := widget.NewButton("View Gists", showList)
+	newGistButton := widget.NewButton("New Gist", showEdit)
 	closeBtn := widget.NewButton("Exit", func() {
 		cfg.exit()
 	})
 
 	// Centered buttons grid
-	buttons := container.NewGridWithColumns(3, b1, b2, closeBtn)
+	buttons := container.NewGridWithColumns(3, newGistButton, viewGistsButton, closeBtn)
 
 	spacer := layout.NewSpacer()
 
