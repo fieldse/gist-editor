@@ -14,6 +14,7 @@ type AppConfig struct {
 	BaseWindow   *fyne.Window
 	ListWindow   *fyne.Window
 	EditWindow   *fyne.Window
+	showEditView func()
 	showListView func()
 	exit         func()
 	RunUI        func()
@@ -21,10 +22,6 @@ type AppConfig struct {
 }
 
 var cfg AppConfig
-
-func newGist() {
-	// TODO
-}
 
 // Generate and store the basic UI components
 func (cfg *AppConfig) MakeUI() {
@@ -45,7 +42,10 @@ func (cfg *AppConfig) MakeUI() {
 	e := EditWindow(a)
 
 	// Create base view UI
-	content := BaseView(cfg, l.Show)
+	// FIXME: find a better way to pass these.
+	// not sure if it can be gotten directly from cfg before it's stored.
+	content := BaseView(cfg, l.Show, e.Show)
+
 	w.SetContent(content)
 
 	// Store the app windows to config
@@ -53,15 +53,14 @@ func (cfg *AppConfig) MakeUI() {
 	cfg.ListWindow = &l
 	cfg.EditWindow = &e
 
-	// Store the Show function for main window
+	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
-
-	// Store the showListView function
-	cfg.showListView = func() { l.Show() }
+	cfg.showListView = l.Show
+	cfg.showEditView = e.Show
 }
 
 // Base view upon opening the app
-func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
+func BaseView(cfg *AppConfig, showList func(), showEdit func()) *fyne.Container {
 
 	// Title
 	title := TitleText("Welcome to the Gist editor!")
@@ -72,7 +71,7 @@ func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
 
 	// Buttons for "View Gists" and "New Gist"
 	b1 := widget.NewButton("View Gists", showList)
-	b2 := widget.NewButton("New Gist", newGist)
+	b2 := widget.NewButton("New Gist", showEdit)
 	closeBtn := widget.NewButton("Exit", func() {
 		cfg.exit()
 	})
