@@ -6,23 +6,22 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/fieldse/gist-editor/internal/logger"
+	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
 	BaseWindow   *fyne.Window
 	ListWindow   *fyne.Window
+	EditWindow   *fyne.Window
+	showEditView func()
 	showListView func()
 	exit         func()
 	RunUI        func()
+	CurrentFile  github.Gist
 }
 
 var cfg AppConfig
-
-func newGist() {
-	// TODO
-}
 
 // Generate and store the basic UI components
 func (cfg *AppConfig) MakeUI() {
@@ -32,30 +31,37 @@ func (cfg *AppConfig) MakeUI() {
 	w := a.NewWindow("GistEdit")
 	w.Resize(fyne.NewSize(600, 400))
 	w.SetMaster() // master window, when closed closes all other windows
+	w.CenterOnScreen()
 
 	// Store the exit function
 	cfg.exit = w.Close
 
 	// Create Gists list window
 	l := ListWindow(a)
-	cfg.ListWindow = &l
+
+	// Create Edit view window
+	e := EditWindow(a)
 
 	// Create base view UI
-	content := BaseView(cfg, l.Show)
+	// FIXME: find a better way to pass these.
+	// not sure if it can be gotten directly from cfg before it's stored.
+	content := BaseView(cfg, l.Show, e.Show)
+
 	w.SetContent(content)
 
-	// Store the base view window
+	// Store the app windows to config
 	cfg.BaseWindow = &w
+	cfg.ListWindow = &l
+	cfg.EditWindow = &e
 
-	// Store the Show function for main window
+	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
-
-	// Store the showListView function
-	cfg.showListView = func() { l.Show() }
+	cfg.showListView = l.Show
+	cfg.showEditView = e.Show
 }
 
 // Base view upon opening the app
-func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
+func BaseView(cfg *AppConfig, showList func(), showEdit func()) *fyne.Container {
 
 	// Title
 	title := TitleText("Welcome to the Gist editor!")
@@ -65,14 +71,14 @@ func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
 	titleContainer := container.NewVBox(title, subLabel)
 
 	// Buttons for "View Gists" and "New Gist"
-	b1 := widget.NewButton("View Gists", showList)
-	b2 := widget.NewButton("New Gist", newGist)
+	viewGistsButton := widget.NewButton("View Gists", showList)
+	newGistButton := widget.NewButton("New Gist", showEdit)
 	closeBtn := widget.NewButton("Exit", func() {
 		cfg.exit()
 	})
 
 	// Centered buttons grid
-	buttons := container.NewGridWithColumns(3, b1, b2, closeBtn)
+	buttons := container.NewGridWithColumns(3, newGistButton, viewGistsButton, closeBtn)
 
 	spacer := layout.NewSpacer()
 
@@ -81,10 +87,6 @@ func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
 		layout.NewGridLayoutWithRows(5), titleContainer, spacer, spacer, spacer, buttons,
 	)
 	return content
-}
-
-func (cfg *AppConfig) Print() {
-	logger.Debug("app config: %+v", cfg)
 }
 
 func StartUI() {
