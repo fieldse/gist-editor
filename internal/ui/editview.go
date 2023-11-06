@@ -36,14 +36,15 @@ func EditUI(gist github.Gist, hide func()) *fyne.Container {
 	// Title
 	titleBox := TitleBox(gist.Filename)
 
-	// Editor pane
-	input := widget.NewMultiLineEntry()
-	input.SetText(gist.Content)
-	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, input)
+	// Editor input
+	edit := widget.NewMultiLineEntry()
+	edit.SetText(gist.Content)
+	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, edit)
 
 	// Preview pane
-	preview := widget.NewRichTextFromMarkdown(input.Text)
+	preview := widget.NewRichTextFromMarkdown(edit.Text)
 	previewPane := container.NewBorder(widget.NewLabel("Preview"), nil, nil, nil, preview)
+	edit.OnChanged = preview.ParseMarkdown // parse markdown to rich text on changed
 
 	// Split pane view
 	splitView := container.NewHSplit(editPane, previewPane)

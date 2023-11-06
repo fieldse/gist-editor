@@ -10,7 +10,7 @@ var ExampleGist = Gist{
 	ID:        "example-gist",
 	Slug:      "example-gist",
 	Filename:  "Example Gist.md",
-	Content:   "This is an example Gist placeholder",
+	Content:   "## Example Gist\n\nThis is an example Gist placeholder.\n\nA list:\n- item 1\n- item 2\n- item 3",
 	AuthorId:  "example-author",
 	CreatedAt: time.Now(),
 }
