@@ -6,11 +6,11 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	mockdata "github.com/fieldse/gist-editor/internal/data"
+	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Placeholder data for Gist content
-var data = mockdata.ExampleGist
+var data = github.ExampleGist
 
 func EditWindow(a fyne.App) fyne.Window {
 	w := a.NewWindow("Edit Gist")
@@ -26,7 +26,7 @@ func EditWindow(a fyne.App) fyne.Window {
 func saveGist() {}
 
 // Generates the UI for the edit window
-func EditUI(gist mockdata.Gist, hide func()) *fyne.Container {
+func EditUI(gist github.Gist, hide func()) *fyne.Container {
 
 	spacer := layout.NewSpacer()
 	saveButton := widget.NewButton("Save", saveGist)

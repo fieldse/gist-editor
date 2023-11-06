@@ -6,16 +6,18 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/fieldse/gist-editor/internal/logger"
+	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
 	BaseWindow   *fyne.Window
 	ListWindow   *fyne.Window
+	EditWindow   *fyne.Window
 	showListView func()
 	exit         func()
 	RunUI        func()
+	CurrentFile  github.Gist
 }
 
 var cfg AppConfig
@@ -38,14 +40,18 @@ func (cfg *AppConfig) MakeUI() {
 
 	// Create Gists list window
 	l := ListWindow(a)
-	cfg.ListWindow = &l
+
+	// Create Edit view window
+	e := EditWindow(a)
 
 	// Create base view UI
 	content := BaseView(cfg, l.Show)
 	w.SetContent(content)
 
-	// Store the base view window
+	// Store the app windows to config
 	cfg.BaseWindow = &w
+	cfg.ListWindow = &l
+	cfg.EditWindow = &e
 
 	// Store the Show function for main window
 	cfg.RunUI = func() { w.ShowAndRun() }
@@ -81,10 +87,6 @@ func BaseView(cfg *AppConfig, showList func()) *fyne.Container {
 		layout.NewGridLayoutWithRows(5), titleContainer, spacer, spacer, spacer, buttons,
 	)
 	return content
-}
-
-func (cfg *AppConfig) Print() {
-	logger.Debug("app config: %+v", cfg)
 }
 
 func StartUI() {

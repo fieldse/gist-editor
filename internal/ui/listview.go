@@ -5,7 +5,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	mockdata "github.com/fieldse/gist-editor/internal/data"
+	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Returns a list view widget of all user gists
@@ -15,7 +15,7 @@ func ListWidget(hide func()) *fyne.Container {
 
 	// Example content widget
 	var data []string
-	for _, x := range mockdata.MockGistData {
+	for _, x := range github.MockGistData {
 		data = append(data, x.Filename)
 	}
 	list := widget.NewList(

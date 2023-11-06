@@ -1,29 +1,18 @@
 // Contains mock data for the Gists view
-package mockdata
+package github
 
 import (
 	"fmt"
 	"time"
 )
 
-// Example structure for a Github Gist.
-// This is just a placeholder
-type Gist struct {
-	ID       string
-	Slug     string
-	Filename string
-	Content  string
-	AuthorId string
-	CreateAt time.Time
-}
-
 var ExampleGist = Gist{
-	ID:       "example-gist",
-	Slug:     "example-gist",
-	Filename: "Example Gist.md",
-	Content:  "This is an example Gist placeholder",
-	AuthorId: "example-author",
-	CreateAt: time.Now(),
+	ID:        "example-gist",
+	Slug:      "example-gist",
+	Filename:  "Example Gist.md",
+	Content:   "This is an example Gist placeholder",
+	AuthorId:  "example-author",
+	CreatedAt: time.Now(),
 }
 
 func newExampleGist(id int) Gist {
