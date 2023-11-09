@@ -1,24 +1,30 @@
 package ui
 
 import (
+	"time"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	BaseWindow   *fyne.Window
-	ListWindow   *fyne.Window
-	EditWindow   *fyne.Window
-	showEditView func()
-	showListView func()
-	exit         func()
-	RunUI        func()
-	CurrentFile  github.Gist
+	App         *fyne.App
+	BaseWindow  *fyne.Window
+	ListWindow  *fyne.Window
+	EditWindow  *fyne.Window
+	RunUI       func()
+	CurrentGist github.Gist
+	CurrentFile GistFile
+}
+
+// A GistFile represents a currently open markdown file
+type GistFile struct {
+	gist      github.Gist
+	isOpen    bool
+	isDirty   bool
+	lastSaved time.Time
 }
 
 var cfg AppConfig
@@ -26,15 +32,14 @@ var cfg AppConfig
 // Generate and store the basic UI components
 func (cfg *AppConfig) MakeUI() {
 
-	// Create app and base window
+	// Create app
 	a := app.New()
-	w := a.NewWindow("GistEdit")
-	w.Resize(fyne.NewSize(600, 400))
-	w.SetMaster() // master window, when closed closes all other windows
-	w.CenterOnScreen()
+	cfg.App = &a
 
-	// Store the exit function
-	cfg.exit = w.Close
+	// Create base view UI.
+	// This is initialized last, because the buttons require the List and Edit views
+	// to be initialized and stored, to attach their Show functions.
+	w := BaseWindow(cfg)
 
 	// Create Gists list window
 	l := ListWindow(a)
@@ -42,51 +47,67 @@ func (cfg *AppConfig) MakeUI() {
 	// Create Edit view window
 	e := EditWindow(a)
 
-	// Create base view UI
-	// FIXME: find a better way to pass these.
-	// not sure if it can be gotten directly from cfg before it's stored.
-	content := BaseView(cfg, l.Show, e.Show)
+	// Create the main menu
+	m := FileMenu(cfg)
+	w.SetMainMenu(m)
 
-	w.SetContent(content)
-
-	// Store the app windows to config
+	// Store the windows to cfg
 	cfg.BaseWindow = &w
 	cfg.ListWindow = &l
 	cfg.EditWindow = &e
 
 	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
-	cfg.showListView = l.Show
-	cfg.showEditView = e.Show
 }
 
-// Base view upon opening the app
-func BaseView(cfg *AppConfig, showList func(), showEdit func()) *fyne.Container {
+// Show the All Gists list view
+func (cfg *AppConfig) ShowListWindow() {
+	w := *cfg.ListWindow
+	w.Show()
+}
 
-	// Title
-	title := TitleText("Welcome to the Gist editor!")
-	subLabel := widget.NewLabel("Click View Gists to see all your gists, or create a new one with New Gist.")
+// Show the Edit Gists view
+func (cfg *AppConfig) ShowEditWindow() {
+	w := *cfg.EditWindow
+	w.Show()
+}
 
-	// Title and welcome text container
-	titleContainer := container.NewVBox(title, subLabel)
+// Exit the application
+func (cfg *AppConfig) Exit() {
+	w := *cfg.BaseWindow
+	w.Close()
+}
 
-	// Buttons for "View Gists" and "New Gist"
-	viewGistsButton := widget.NewButton("View Gists", showList)
-	newGistButton := widget.NewButton("New Gist", showEdit)
-	closeBtn := widget.NewButton("Exit", func() {
-		cfg.exit()
-	})
+// OpenFile opens a local markdown file
+func (cfg *AppConfig) OpenFile() {
+	// TODO
+	openFile()
+	cfg.CurrentFile.gist = github.ExampleGist
+	cfg.CurrentFile.isOpen = true
+}
 
-	// Centered buttons grid
-	buttons := container.NewGridWithColumns(3, newGistButton, viewGistsButton, closeBtn)
+// SaveFile saves the currently open markdown file locally to disk
+func (cfg *AppConfig) SaveFile() {
+	// TODO
+	saveFile()
+	cfg.CurrentFile.lastSaved = time.Now()
+	cfg.CurrentFile.isDirty = false
+}
 
-	spacer := layout.NewSpacer()
+// SaveFileAs saves the currently open markdown file locally to disk with a new filename
+func (cfg *AppConfig) SaveFileAs() {
+	// TODO
+	saveFileAs()
+	cfg.CurrentFile.lastSaved = time.Now()
+	cfg.CurrentFile.isDirty = false
+}
 
-	// Vertical grid layout
-	content := container.New(
-		layout.NewGridLayoutWithRows(5), titleContainer, spacer, spacer, spacer, buttons,
-	)
-	return content
+// CloseFile closes the currently open markdown file
+func (cfg *AppConfig) CloseFile() {
+	// TODO
+	cfg.CurrentFile.gist = github.Gist{}
+	cfg.CurrentFile.isOpen = false
+	closeFile()
 }
 
 func StartUI() {
