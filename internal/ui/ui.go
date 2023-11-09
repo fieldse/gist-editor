@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"time"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"github.com/fieldse/gist-editor/internal/github"
@@ -13,7 +15,16 @@ type AppConfig struct {
 	ListWindow  *fyne.Window
 	EditWindow  *fyne.Window
 	RunUI       func()
-	CurrentFile github.Gist
+	CurrentGist github.Gist
+	CurrentFile GistFile
+}
+
+// A GistFile represents a currently open markdown file
+type GistFile struct {
+	gist      github.Gist
+	isOpen    bool
+	isDirty   bool
+	lastSaved time.Time
 }
 
 var cfg AppConfig
@@ -65,6 +76,38 @@ func (cfg *AppConfig) ShowEditWindow() {
 func (cfg *AppConfig) Exit() {
 	w := *cfg.BaseWindow
 	w.Close()
+}
+
+// OpenFile opens a local markdown file
+func (cfg *AppConfig) OpenFile() {
+	// TODO
+	openFile()
+	cfg.CurrentFile.gist = github.ExampleGist
+	cfg.CurrentFile.isOpen = true
+}
+
+// SaveFile saves the currently open markdown file locally to disk
+func (cfg *AppConfig) SaveFile() {
+	// TODO
+	saveFile()
+	cfg.CurrentFile.lastSaved = time.Now()
+	cfg.CurrentFile.isDirty = false
+}
+
+// SaveFileAs saves the currently open markdown file locally to disk with a new filename
+func (cfg *AppConfig) SaveFileAs() {
+	// TODO
+	saveFileAs()
+	cfg.CurrentFile.lastSaved = time.Now()
+	cfg.CurrentFile.isDirty = false
+}
+
+// CloseFile closes the currently open markdown file
+func (cfg *AppConfig) CloseFile() {
+	// TODO
+	cfg.CurrentFile.gist = github.Gist{}
+	cfg.CurrentFile.isOpen = false
+	closeFile()
 }
 
 func StartUI() {

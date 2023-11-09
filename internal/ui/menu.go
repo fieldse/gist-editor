@@ -7,13 +7,12 @@ import (
 
 // // Returns a main File menu
 func FileMenu(cfg *AppConfig) *fyne.MainMenu {
-	openMenu := fyne.NewMenuItem("Open...", openFile)
-	saveMenu := fyne.NewMenuItem("Save", saveFile)
-	saveAsMenu := fyne.NewMenuItem("Save as...", saveFileAs)
-	closeMenu := fyne.NewMenuItem("Close", closeFile)
-	exitMenu := fyne.NewMenuItem("Quit", cfg.Exit)
+	openMenu := fyne.NewMenuItem("Open...", cfg.OpenFile)
+	saveMenu := fyne.NewMenuItem("Save", cfg.SaveFile)
+	saveAsMenu := fyne.NewMenuItem("Save as...", cfg.SaveFileAs)
+	closeMenu := fyne.NewMenuItem("Close", cfg.CloseFile)
 
-	fileMenu := fyne.NewMenu("File", openMenu, saveMenu, saveAsMenu, closeMenu, exitMenu)
+	fileMenu := fyne.NewMenu("File", openMenu, saveMenu, saveAsMenu, closeMenu)
 	mainMenu := fyne.NewMainMenu(fileMenu)
 	return mainMenu
 }
