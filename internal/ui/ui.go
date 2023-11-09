@@ -11,17 +11,17 @@ import (
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	App          *fyne.App
-	BaseWindow   *fyne.Window
-	ListWindow   *fyne.Window
-	EditWindow   *fyne.Window
-	showEditView func()
-	showListView func()
-	// openFileFunc  func()
-	// closeFileFunc func()
-	exit        func()
-	RunUI       func()
-	CurrentFile github.Gist
+	App           *fyne.App
+	BaseWindow    *fyne.Window
+	ListWindow    *fyne.Window
+	EditWindow    *fyne.Window
+	showEditView  func()
+	showListView  func()
+	openFileFunc  func()
+	closeFileFunc func()
+	exit          func()
+	RunUI         func()
+	CurrentFile   github.Gist
 }
 
 var cfg AppConfig
@@ -43,6 +43,10 @@ func (cfg *AppConfig) MakeUI() {
 
 	// Create Edit view window
 	e := EditWindow(a)
+
+	// Create the main menu
+	m := FileMenu(cfg)
+	w.SetMainMenu(m)
 
 	// Store the windows to cfg
 	cfg.BaseWindow = &w
