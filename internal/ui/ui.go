@@ -11,14 +11,17 @@ import (
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
+	App          *fyne.App
 	BaseWindow   *fyne.Window
 	ListWindow   *fyne.Window
 	EditWindow   *fyne.Window
 	showEditView func()
 	showListView func()
-	exit         func()
-	RunUI        func()
-	CurrentFile  github.Gist
+	// openFileFunc  func()
+	// closeFileFunc func()
+	exit        func()
+	RunUI       func()
+	CurrentFile github.Gist
 }
 
 var cfg AppConfig
@@ -26,15 +29,14 @@ var cfg AppConfig
 // Generate and store the basic UI components
 func (cfg *AppConfig) MakeUI() {
 
-	// Create app and base window
+	// Create app
 	a := app.New()
-	w := a.NewWindow("GistEdit")
-	w.Resize(fyne.NewSize(600, 400))
-	w.SetMaster() // master window, when closed closes all other windows
-	w.CenterOnScreen()
+	cfg.App = &a
 
-	// Store the exit function
-	cfg.exit = w.Close
+	// Create base view UI.
+	// This is initialized last, because the buttons require the List and Edit views
+	// to be initialized and stored, to attach their Show functions.
+	w := BaseWindow(cfg)
 
 	// Create Gists list window
 	l := ListWindow(a)
@@ -42,26 +44,43 @@ func (cfg *AppConfig) MakeUI() {
 	// Create Edit view window
 	e := EditWindow(a)
 
-	// Create base view UI
-	// FIXME: find a better way to pass these.
-	// not sure if it can be gotten directly from cfg before it's stored.
-	content := BaseView(cfg, l.Show, e.Show)
-
-	w.SetContent(content)
-
-	// Store the app windows to config
+	// Store the windows to cfg
 	cfg.BaseWindow = &w
 	cfg.ListWindow = &l
 	cfg.EditWindow = &e
 
-	// Store the show window functions
-	cfg.RunUI = func() { w.ShowAndRun() }
+	// Connect the Show window functions
 	cfg.showListView = l.Show
 	cfg.showEditView = e.Show
+
+	// Store the show window functions
+	cfg.RunUI = func() { w.ShowAndRun() }
+}
+
+// Intitialize and return the base window
+// TODO: find a better way to pass the Show window functions --
+// not sure if it can be gotten directly from cfg before it's stored.
+func BaseWindow(cfg *AppConfig) fyne.Window {
+	a := *cfg.App
+
+	// Generate new master window, set size, center it on screen
+	w := a.NewWindow("GistEdit")
+	w.Resize(fyne.NewSize(600, 400))
+	w.SetMaster() // master window, when closed closes all other windows
+	w.CenterOnScreen()
+
+	// Store the exit function to Cfg
+	cfg.exit = w.Close
+
+	// Generate window content UI
+	content := BaseView(cfg)
+	w.SetContent(content)
+
+	return w
 }
 
 // Base view upon opening the app
-func BaseView(cfg *AppConfig, showList func(), showEdit func()) *fyne.Container {
+func BaseView(cfg *AppConfig) *fyne.Container {
 
 	// Title
 	title := TitleText("Welcome to the Gist editor!")
@@ -71,8 +90,12 @@ func BaseView(cfg *AppConfig, showList func(), showEdit func()) *fyne.Container 
 	titleContainer := container.NewVBox(title, subLabel)
 
 	// Buttons for "View Gists" and "New Gist"
-	viewGistsButton := widget.NewButton("View Gists", showList)
-	newGistButton := widget.NewButton("New Gist", showEdit)
+	viewGistsButton := widget.NewButton("View Gists", func() {
+		cfg.showListView()
+	})
+	newGistButton := widget.NewButton("New Gist", func() {
+		cfg.showEditView()
+	})
 	closeBtn := widget.NewButton("Exit", func() {
 		cfg.exit()
 	})
