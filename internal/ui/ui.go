@@ -8,14 +8,12 @@ import (
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	App           *fyne.App
-	BaseWindow    *fyne.Window
-	ListWindow    *fyne.Window
-	EditWindow    *fyne.Window
-	openFileFunc  func()
-	closeFileFunc func()
-	RunUI         func()
-	CurrentFile   github.Gist
+	App         *fyne.App
+	BaseWindow  *fyne.Window
+	ListWindow  *fyne.Window
+	EditWindow  *fyne.Window
+	RunUI       func()
+	CurrentFile github.Gist
 }
 
 var cfg AppConfig
