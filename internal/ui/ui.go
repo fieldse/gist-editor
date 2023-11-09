@@ -12,11 +12,8 @@ type AppConfig struct {
 	BaseWindow    *fyne.Window
 	ListWindow    *fyne.Window
 	EditWindow    *fyne.Window
-	showEditView  func()
-	showListView  func()
 	openFileFunc  func()
 	closeFileFunc func()
-	exit          func()
 	RunUI         func()
 	CurrentFile   github.Gist
 }
@@ -50,12 +47,26 @@ func (cfg *AppConfig) MakeUI() {
 	cfg.ListWindow = &l
 	cfg.EditWindow = &e
 
-	// Connect the Show window functions
-	cfg.showListView = l.Show
-	cfg.showEditView = e.Show
-
 	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
+}
+
+// Show the All Gists list view
+func (cfg *AppConfig) ShowListWindow() {
+	w := *cfg.ListWindow
+	w.Show()
+}
+
+// Show the Edit Gists view
+func (cfg *AppConfig) ShowEditWindow() {
+	w := *cfg.EditWindow
+	w.Show()
+}
+
+// Exit the application
+func (cfg *AppConfig) Exit() {
+	w := *cfg.BaseWindow
+	w.Close()
 }
 
 func StartUI() {

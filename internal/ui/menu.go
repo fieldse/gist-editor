@@ -7,7 +7,7 @@ import "fyne.io/fyne/v2"
 func FileMenu(cfg *AppConfig) *fyne.MainMenu {
 	openMenu := fyne.NewMenuItem("Open...", cfg.openFileFunc)
 	closeMenu := fyne.NewMenuItem("Close", cfg.closeFileFunc)
-	exitMenu := fyne.NewMenuItem("Exit", cfg.exit)
+	exitMenu := fyne.NewMenuItem("Exit", cfg.Exit)
 
 	fileMenu := fyne.NewMenu("File", openMenu, closeMenu, exitMenu)
 	mainMenu := fyne.NewMainMenu(fileMenu)

@@ -18,9 +18,6 @@ func BaseWindow(cfg *AppConfig) fyne.Window {
 	w.SetMaster() // master window, when closed closes all other windows
 	w.CenterOnScreen()
 
-	// Store the exit function to Cfg
-	cfg.exit = w.Close
-
 	// Generate window content UI
 	content := BaseView(cfg)
 	w.SetContent(content)
@@ -39,15 +36,9 @@ func BaseView(cfg *AppConfig) *fyne.Container {
 	titleContainer := container.NewVBox(title, subLabel)
 
 	// Buttons for "View Gists" and "New Gist"
-	viewGistsButton := widget.NewButton("View Gists", func() {
-		cfg.showListView()
-	})
-	newGistButton := widget.NewButton("New Gist", func() {
-		cfg.showEditView()
-	})
-	closeBtn := widget.NewButton("Exit", func() {
-		cfg.exit()
-	})
+	viewGistsButton := widget.NewButton("View Gists", cfg.ShowListWindow)
+	newGistButton := widget.NewButton("New Gist", cfg.ShowEditWindow)
+	closeBtn := widget.NewButton("Exit", cfg.Exit)
 
 	// Centered buttons grid
 	buttons := container.NewGridWithColumns(3, newGistButton, viewGistsButton, closeBtn)
