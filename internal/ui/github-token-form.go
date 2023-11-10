@@ -20,11 +20,10 @@ func GithubTokenModal(cfg *AppConfig, w fyne.Window) *dialog.FormDialog {
 	}
 	// Onsave for the form dialog
 	onSave := func(b bool) {
-		logger.Debug("onSave called: bool value: %t", b)
 		if !b {
 			return
 		}
-		logger.Debug("onSave called: Github API token: %v", tempVal)
+		logger.Debug("Github API token saved: %v", tempVal)
 		cfg.GithubConfig.GithubAPIToken = tempVal
 	}
 	var formItems []*widget.FormItem
