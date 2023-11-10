@@ -12,26 +12,28 @@ import (
 // Placeholder data for Gist content
 var data = github.ExampleGist
 
-func EditWindow(a fyne.App) fyne.Window {
+func EditWindow(cfg *AppConfig) *fyne.Window {
+	a := *cfg.App
 	w := a.NewWindow("Edit Gist")
 	w.Resize(fyne.NewSize(800, 600))
 
-	content := EditUI(data, w.Hide)
+	content := EditUI(cfg, data, w)
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return w
+	return &w
 }
 
-// TODO -- placeholder for Save func
-func saveGist() {}
-
 // Generates the UI for the edit window
-func EditUI(gist github.Gist, hide func()) *fyne.Container {
+func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) *fyne.Container {
 
 	spacer := layout.NewSpacer()
-	saveButton := widget.NewButton("Save", saveGist)
-	closeButton := widget.NewButton("Close", hide)
+	saveButton := widget.NewButton("Save", func() {
+		cfg.SaveFile()
+	})
+	closeButton := widget.NewButton("Close", func() {
+		w.Hide()
+	})
 
 	// Title
 	titleBox := TitleBox(gist.Filename)

@@ -45,7 +45,7 @@ func (cfg *AppConfig) MakeUI() {
 	l := ListWindow(a)
 
 	// Create Edit view window
-	e := EditWindow(a)
+	e := EditWindow(cfg)
 
 	// Create the main menu
 	m := FileMenu(cfg)
@@ -53,8 +53,8 @@ func (cfg *AppConfig) MakeUI() {
 
 	// Store the windows to cfg
 	cfg.BaseWindow = &w
-	cfg.ListWindow = &l
-	cfg.EditWindow = &e
+	cfg.ListWindow = l
+	cfg.EditWindow = e
 
 	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
