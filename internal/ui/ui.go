@@ -5,18 +5,21 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/dialog"
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	App         *fyne.App
-	BaseWindow  *fyne.Window
-	ListWindow  *fyne.Window
-	EditWindow  *fyne.Window
-	RunUI       func()
-	CurrentGist github.Gist
-	CurrentFile GistFile
+	App              *fyne.App
+	BaseWindow       *fyne.Window
+	ListWindow       *fyne.Window
+	EditWindow       *fyne.Window
+	GithubTokenModal *dialog.FormDialog
+	RunUI            func()
+	CurrentGist      github.Gist
+	CurrentFile      GistFile
+	GithubConfig     *github.GithubConfig
 }
 
 // A GistFile represents a currently open markdown file
@@ -35,6 +38,7 @@ func (cfg *AppConfig) MakeUI() {
 	// Create app
 	a := app.New()
 	cfg.App = &a
+	cfg.GithubConfig = &github.GithubConfig{}
 
 	// Create base view UI.
 	// This is initialized last, because the buttons require the List and Edit views
@@ -45,7 +49,10 @@ func (cfg *AppConfig) MakeUI() {
 	l := ListWindow(a)
 
 	// Create Edit view window
-	e := EditWindow(a)
+	e := EditWindow(cfg)
+
+	// Create Github token modal
+	g := GithubTokenModal(cfg, w)
 
 	// Create the main menu
 	m := FileMenu(cfg)
@@ -53,8 +60,9 @@ func (cfg *AppConfig) MakeUI() {
 
 	// Store the windows to cfg
 	cfg.BaseWindow = &w
-	cfg.ListWindow = &l
-	cfg.EditWindow = &e
+	cfg.ListWindow = l
+	cfg.EditWindow = e
+	cfg.GithubTokenModal = g
 
 	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
@@ -69,6 +77,12 @@ func (cfg *AppConfig) ShowListWindow() {
 // Show the Edit Gists view
 func (cfg *AppConfig) ShowEditWindow() {
 	w := *cfg.EditWindow
+	w.Show()
+}
+
+// Show the Github Token modal
+func (cfg *AppConfig) ShowGithubTokenModal() {
+	w := *cfg.GithubTokenModal
 	w.Show()
 }
 
