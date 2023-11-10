@@ -1,11 +1,13 @@
 package ui
 
 import (
+	"io"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/storage"
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
@@ -17,17 +19,17 @@ type AppConfig struct {
 	EditWindow       *fyne.Window
 	GithubTokenModal *dialog.FormDialog
 	RunUI            func()
-	CurrentGist      github.Gist
 	CurrentFile      GistFile
 	GithubConfig     *github.GithubConfig
 }
 
 // A GistFile represents a currently open markdown file
 type GistFile struct {
-	gist      github.Gist
-	isOpen    bool
-	isDirty   bool
-	lastSaved time.Time
+	gist          github.Gist
+	localFilepath string
+	isOpen        bool
+	isDirty       bool
+	lastSaved     time.Time
 }
 
 var cfg AppConfig
@@ -95,9 +97,28 @@ func (cfg *AppConfig) Exit() {
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
 	// TODO
-	openFile()
-	cfg.CurrentFile.gist = github.ExampleGist
-	cfg.CurrentFile.isOpen = true
+	w := *cfg.BaseWindow // parent window
+	openFileFunc := func(read fyne.URIReadCloser, err error) {
+		if err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
+		if read == nil {
+			return
+		}
+		defer read.Close()
+		data, err := io.ReadAll(read)
+		if err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
+		cfg.CurrentFile.gist.Content = string(data)
+		cfg.CurrentFile.localFilepath = read.URI().Path()
+		cfg.CurrentFile.isOpen = true
+	}
+	openFileDialog := dialog.NewFileOpen(openFileFunc, w)
+	openFileDialog.SetFilter(storage.NewExtensionFileFilter([]string{"*.md", "*.txt"}))
+	openFileDialog.Show()
 }
 
 // SaveFile saves the currently open markdown file locally to disk
