@@ -7,6 +7,10 @@ import (
 	"github.com/avelino/slugify"
 )
 
+type GithubConfig struct {
+	GithubAPIToken string
+}
+
 // Example structure for a Github Gist.
 // This is just a placeholder
 type Gist struct {

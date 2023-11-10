@@ -19,6 +19,7 @@ type AppConfig struct {
 	RunUI            func()
 	CurrentGist      github.Gist
 	CurrentFile      GistFile
+	GithubConfig     *github.GithubConfig
 }
 
 // A GistFile represents a currently open markdown file
@@ -37,6 +38,7 @@ func (cfg *AppConfig) MakeUI() {
 	// Create app
 	a := app.New()
 	cfg.App = &a
+	cfg.GithubConfig = &github.GithubConfig{}
 
 	// Create base view UI.
 	// This is initialized last, because the buttons require the List and Edit views
@@ -50,7 +52,7 @@ func (cfg *AppConfig) MakeUI() {
 	e := EditWindow(cfg)
 
 	// Create Github token modal
-	g := GithubTokenModal(w)
+	g := GithubTokenModal(cfg, w)
 
 	// Create the main menu
 	m := FileMenu(cfg)
