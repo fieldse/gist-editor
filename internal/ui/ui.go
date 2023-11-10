@@ -94,6 +94,9 @@ func (cfg *AppConfig) Exit() {
 	w.Close()
 }
 
+// Openable filetypes  filter
+var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
+
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
 	// TODO
@@ -117,7 +120,7 @@ func (cfg *AppConfig) OpenFile() {
 		cfg.CurrentFile.isOpen = true
 	}
 	openFileDialog := dialog.NewFileOpen(openFileFunc, w)
-	openFileDialog.SetFilter(storage.NewExtensionFileFilter([]string{"*.md", "*.txt"}))
+	openFileDialog.SetFilter(filter)
 	openFileDialog.Show()
 }
 
