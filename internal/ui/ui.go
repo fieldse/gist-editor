@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"io"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -99,29 +98,7 @@ var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
 
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
-	// TODO
-	w := *cfg.BaseWindow // parent window
-	openFileFunc := func(read fyne.URIReadCloser, err error) {
-		if err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		if read == nil {
-			return
-		}
-		defer read.Close()
-		data, err := io.ReadAll(read)
-		if err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		cfg.CurrentFile.gist.Content = string(data)
-		cfg.CurrentFile.localFilepath = read.URI().Path()
-		cfg.CurrentFile.isOpen = true
-	}
-	openFileDialog := dialog.NewFileOpen(openFileFunc, w)
-	openFileDialog.SetFilter(filter)
-	openFileDialog.Show()
+	openFile(cfg)
 }
 
 // SaveFile saves the currently open markdown file locally to disk
