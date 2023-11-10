@@ -5,18 +5,20 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/dialog"
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	App         *fyne.App
-	BaseWindow  *fyne.Window
-	ListWindow  *fyne.Window
-	EditWindow  *fyne.Window
-	RunUI       func()
-	CurrentGist github.Gist
-	CurrentFile GistFile
+	App              *fyne.App
+	BaseWindow       *fyne.Window
+	ListWindow       *fyne.Window
+	EditWindow       *fyne.Window
+	GithubTokenModal *dialog.FormDialog
+	RunUI            func()
+	CurrentGist      github.Gist
+	CurrentFile      GistFile
 }
 
 // A GistFile represents a currently open markdown file
@@ -47,6 +49,9 @@ func (cfg *AppConfig) MakeUI() {
 	// Create Edit view window
 	e := EditWindow(cfg)
 
+	// Create Github token modal
+	g := GithubTokenModal(w)
+
 	// Create the main menu
 	m := FileMenu(cfg)
 	w.SetMainMenu(m)
@@ -55,6 +60,7 @@ func (cfg *AppConfig) MakeUI() {
 	cfg.BaseWindow = &w
 	cfg.ListWindow = l
 	cfg.EditWindow = e
+	cfg.GithubTokenModal = g
 
 	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
@@ -69,6 +75,12 @@ func (cfg *AppConfig) ShowListWindow() {
 // Show the Edit Gists view
 func (cfg *AppConfig) ShowEditWindow() {
 	w := *cfg.EditWindow
+	w.Show()
+}
+
+// Show the Github Token modal
+func (cfg *AppConfig) ShowGithubTokenModal() {
+	w := *cfg.GithubTokenModal
 	w.Show()
 }
 
