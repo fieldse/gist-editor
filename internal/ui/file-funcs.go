@@ -6,9 +6,9 @@ import (
 	"path"
 	"time"
 
-	"fyne.io/fyne/storage"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/storage"
 	"github.com/fieldse/gist-editor/internal/github"
 	"github.com/fieldse/gist-editor/internal/logger"
 )
