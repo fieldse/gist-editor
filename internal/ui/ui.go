@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/storage"
+	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
@@ -16,19 +16,11 @@ type AppConfig struct {
 	BaseWindow       *fyne.Window
 	ListWindow       *fyne.Window
 	EditWindow       *fyne.Window
+	Editor           *widget.Entry // the content editor
 	GithubTokenModal *dialog.FormDialog
 	RunUI            func()
 	CurrentFile      GistFile
 	GithubConfig     *github.GithubConfig
-}
-
-// A GistFile represents a currently open markdown file
-type GistFile struct {
-	gist          github.Gist
-	localFilepath string
-	isOpen        bool
-	isDirty       bool
-	lastSaved     time.Time
 }
 
 var cfg AppConfig
@@ -49,8 +41,8 @@ func (cfg *AppConfig) MakeUI() {
 	// Create Gists list window
 	l := ListWindow(a)
 
-	// Create Edit view window
-	e := EditWindow(cfg)
+	// Create Edit view window, and get the entry editor
+	e, editor := EditWindow(cfg)
 
 	// Create Github token modal
 	g := GithubTokenModal(cfg, w)
@@ -63,6 +55,7 @@ func (cfg *AppConfig) MakeUI() {
 	cfg.BaseWindow = &w
 	cfg.ListWindow = l
 	cfg.EditWindow = e
+	cfg.Editor = editor
 	cfg.GithubTokenModal = g
 
 	// Store the show window functions
@@ -93,9 +86,6 @@ func (cfg *AppConfig) Exit() {
 	w.Close()
 }
 
-// Openable filetypes  filter
-var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
-
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
 	openFile(cfg)
@@ -119,10 +109,10 @@ func (cfg *AppConfig) SaveFileAs() {
 
 // CloseFile closes the currently open markdown file
 func (cfg *AppConfig) CloseFile() {
-	// TODO
-	cfg.CurrentFile.gist = github.Gist{}
-	cfg.CurrentFile.isOpen = false
-	closeFile()
+	closeFile(cfg)
+	cfg.Editor.SetText("") // clear the content of the editor
+	w := *cfg.EditWindow
+	w.Hide()
 }
 
 func StartUI() {

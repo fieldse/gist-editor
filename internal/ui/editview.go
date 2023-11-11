@@ -12,20 +12,23 @@ import (
 // Placeholder data for Gist content
 var data = github.ExampleGist
 
-func EditWindow(cfg *AppConfig) *fyne.Window {
+// EditWindow creates a new Editor window, returning the window and a pointer
+// to the content editor
+func EditWindow(cfg *AppConfig) (*fyne.Window, *widget.Entry) {
 	a := *cfg.App
 	w := a.NewWindow("Edit Gist")
 	w.Resize(fyne.NewSize(800, 600))
 
-	content := EditUI(cfg, data, w)
+	content, editor := EditUI(cfg, data, w)
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return &w
+	return &w, editor
 }
 
 // Generates the UI for the edit window
-func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) *fyne.Container {
+// Returns the container, and a pointer to the content editor
+func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry) {
 
 	spacer := layout.NewSpacer()
 	saveButton := widget.NewButton("Save", func() {
@@ -39,14 +42,14 @@ func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) *fyne.Container {
 	titleBox := TitleBox(gist.Filename)
 
 	// Editor input
-	edit := widget.NewMultiLineEntry()
-	edit.SetText(gist.Content)
-	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, edit)
+	editor := widget.NewMultiLineEntry()
+	editor.SetText(gist.Content)
+	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, editor)
 
 	// Preview pane
-	preview := widget.NewRichTextFromMarkdown(edit.Text)
+	preview := widget.NewRichTextFromMarkdown(editor.Text)
 	previewPane := container.NewBorder(widget.NewLabel("Preview"), nil, nil, nil, preview)
-	edit.OnChanged = preview.ParseMarkdown // parse markdown to rich text on changed
+	editor.OnChanged = preview.ParseMarkdown // parse markdown to rich text on changed
 
 	// Split pane view
 	splitView := container.NewHSplit(editPane, previewPane)
@@ -56,5 +59,5 @@ func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) *fyne.Container {
 
 	// Wrapper container
 	content := container.NewBorder(titleBox, buttons, nil, nil, splitView)
-	return content
+	return content, editor
 }

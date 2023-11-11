@@ -9,6 +9,17 @@ import (
 	"github.com/fieldse/gist-editor/internal/logger"
 )
 
+// A GistFile represents a currently open local or remote markdown file
+type GistFile struct {
+	Gist      *github.Gist
+	isLocal   bool   // true if this is a local file from disk
+	localURI  string // path to file resource: may differ on different OSs
+	isOpen    bool
+	isDirty   bool
+	lastSaved time.Time
+}
+
+
 // Open a file from disk in the editor
 func openFile(cfg *AppConfig) {
 
