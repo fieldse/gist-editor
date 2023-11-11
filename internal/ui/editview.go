@@ -35,7 +35,9 @@ func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) (*fyne.Container, *
 		cfg.SaveFile()
 	})
 	closeButton := widget.NewButton("Close", func() {
-		w.Hide()
+		cfg.CloseFile()
+		e := *cfg.EditWindow
+		e.Hide()
 	})
 
 	// Title

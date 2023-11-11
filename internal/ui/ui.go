@@ -12,15 +12,17 @@ import (
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	App              *fyne.App
-	BaseWindow       *fyne.Window
-	ListWindow       *fyne.Window
-	EditWindow       *fyne.Window
-	Editor           *widget.Entry // the content editor
-	GithubTokenModal *dialog.FormDialog
-	RunUI            func()
-	CurrentFile      GistFile
-	GithubConfig     *github.GithubConfig
+	App               *fyne.App
+	BaseWindow        *fyne.Window
+	ListWindow        *fyne.Window
+	Editor            *widget.Entry // the content editor
+	EditWindow        *fyne.Window
+	editWindowVisible bool
+	setCanSave        func(bool) // Toggle function to allow saving file
+	GithubTokenModal  *dialog.FormDialog
+	RunUI             func()
+	CurrentFile       GistFile
+	GithubConfig      *github.GithubConfig
 }
 
 var cfg AppConfig
@@ -48,7 +50,7 @@ func (cfg *AppConfig) MakeUI() {
 	g := GithubTokenModal(cfg, w)
 
 	// Create the main menu
-	m := FileMenu(cfg)
+	m, setCanSave := FileMenu(cfg)
 	w.SetMainMenu(m)
 
 	// Store the windows to cfg
@@ -57,6 +59,7 @@ func (cfg *AppConfig) MakeUI() {
 	cfg.EditWindow = e
 	cfg.Editor = editor
 	cfg.GithubTokenModal = g
+	cfg.setCanSave = setCanSave
 
 	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
@@ -70,6 +73,7 @@ func (cfg *AppConfig) ShowListWindow() {
 
 // Show the Edit Gists view
 func (cfg *AppConfig) ShowEditWindow() {
+	cfg.editWindowVisible = true
 	w := *cfg.EditWindow
 	w.Show()
 }
@@ -86,9 +90,16 @@ func (cfg *AppConfig) Exit() {
 	w.Close()
 }
 
+// NewFile opens a new empty markdown editor
+func (cfg *AppConfig) NewFile() {
+	cfg.setCanSave(true)
+	cfg.ShowEditWindow()
+}
+
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
 	openFile(cfg)
+	cfg.setCanSave(true)
 }
 
 // SaveFile saves the currently open markdown file locally to disk
@@ -110,6 +121,7 @@ func (cfg *AppConfig) SaveFileAs() {
 // CloseFile closes the currently open markdown file and closes the editor window
 func (cfg *AppConfig) CloseFile() {
 	closeFile(cfg)
+	cfg.setCanSave(false)
 	w := *cfg.EditWindow
 	w.Hide()
 }
