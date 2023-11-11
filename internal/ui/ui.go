@@ -107,10 +107,9 @@ func (cfg *AppConfig) SaveFileAs() {
 	cfg.CurrentFile.isDirty = false
 }
 
-// CloseFile closes the currently open markdown file
+// CloseFile closes the currently open markdown file and closes the editor window
 func (cfg *AppConfig) CloseFile() {
 	closeFile(cfg)
-	cfg.Editor.SetText("") // clear the content of the editor
 	w := *cfg.EditWindow
 	w.Hide()
 }

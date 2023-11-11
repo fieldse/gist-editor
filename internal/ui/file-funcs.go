@@ -3,9 +3,13 @@ package ui
 
 import (
 	"io"
+	"path"
+	"time"
 
+	"fyne.io/fyne/storage"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
+	"github.com/fieldse/gist-editor/internal/github"
 	"github.com/fieldse/gist-editor/internal/logger"
 )
 
@@ -19,6 +23,8 @@ type GistFile struct {
 	lastSaved time.Time
 }
 
+// Openable filetypes  filter
+var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
 
 // Open a file from disk in the editor
 func openFile(cfg *AppConfig) {
@@ -38,9 +44,16 @@ func openFile(cfg *AppConfig) {
 			dialog.ShowError(err, w)
 			return
 		}
-		cfg.CurrentFile.gist.Content = string(data)
-		cfg.CurrentFile.localFilepath = read.URI().Path()
-		cfg.CurrentFile.isOpen = true
+		filePath := read.URI().Path()
+		fileName := read.URI().Name()
+		gist := github.Gist{}.New(fileName, string(data))
+
+		cfg.CurrentFile = GistFile{
+			Gist:     &gist,
+			isLocal:  true,
+			isOpen:   true,
+			localURI: path.Join(filePath, fileName),
+		}
 	}
 	openFileDialog := dialog.NewFileOpen(openFileFunc, w)
 	openFileDialog.SetFilter(filter)
@@ -58,6 +71,10 @@ func saveFileAs() {
 }
 
 // Close the currently open file
-func closeFile() {
-	logger.Debug("todo -- close file...")
+func closeFile(cfg *AppConfig) {
+	cfg.CurrentFile.Gist = &github.Gist{}
+	cfg.CurrentFile.isOpen = false
+	cfg.CurrentFile.isLocal = false
+	cfg.CurrentFile.isDirty = false
+	cfg.Editor.SetText("") // clear the editor text
 }
