@@ -11,10 +11,10 @@ import (
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
 	App               *fyne.App
-	BaseWindow        *fyne.Window
-	ListWindow        *fyne.Window
+	BaseWindow        fyne.Window
+	ListWindow        fyne.Window
 	Editor            *widget.Entry // the content editor
-	EditWindow        *fyne.Window
+	EditWindow        fyne.Window
 	editWindowVisible bool
 	setCanSave        func(bool) // Toggle function to allow saving file
 	GithubTokenModal  *dialog.FormDialog
@@ -65,7 +65,7 @@ func (cfg *AppConfig) MakeUI() {
 	w.SetMainMenu(m)
 
 	// Store the windows to cfg
-	cfg.BaseWindow = &w
+	cfg.BaseWindow = w
 	cfg.ListWindow = l
 	cfg.EditWindow = e
 	cfg.Editor = editor
@@ -78,15 +78,13 @@ func (cfg *AppConfig) MakeUI() {
 
 // Show the All Gists list view
 func (cfg *AppConfig) ShowListWindow() {
-	w := *cfg.ListWindow
-	w.Show()
+	cfg.ListWindow.Show()
 }
 
 // Show the Edit Gists view
 func (cfg *AppConfig) ShowEditWindow() {
 	cfg.editWindowVisible = true
-	w := *cfg.EditWindow
-	w.Show()
+	cfg.EditWindow.Show()
 }
 
 // Show the Github Token modal
@@ -97,8 +95,7 @@ func (cfg *AppConfig) ShowGithubTokenModal() {
 
 // Exit the application
 func (cfg *AppConfig) Exit() {
-	w := *cfg.BaseWindow
-	w.Close()
+	cfg.BaseWindow.Close()
 }
 
 // NewFile opens a new empty markdown editor
@@ -109,8 +106,7 @@ func (cfg *AppConfig) NewFile() {
 
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
-	w := *cfg.BaseWindow // parent window
-	d := dialog.NewFileOpen(openFile, w)
+	d := dialog.NewFileOpen(openFile, cfg.BaseWindow)
 	d.SetFilter(filter)
 	d.Resize(fyne.NewSize(600, 600))
 	d.Show()
@@ -135,8 +131,7 @@ func (cfg *AppConfig) CloseFile() {
 	cfg.setCanSave(false)
 	cfg.Editor.SetText("") // clear the editor text
 	cfg.CurrentFile.Close()
-	w := *cfg.EditWindow
-	w.Hide()
+	cfg.EditWindow.Hide()
 }
 
 func StartUI() {

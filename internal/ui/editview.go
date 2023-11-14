@@ -11,7 +11,7 @@ import (
 
 // EditWindow creates a new Editor window, returning the window and a pointer
 // to the content editor
-func EditWindow(cfg *AppConfig) (*fyne.Window, *widget.Entry) {
+func EditWindow(cfg *AppConfig) (fyne.Window, *widget.Entry) {
 	a := *cfg.App
 	w := a.NewWindow("Edit Gist")
 	f := cfg.CurrentFile
@@ -21,7 +21,7 @@ func EditWindow(cfg *AppConfig) (*fyne.Window, *widget.Entry) {
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return &w, editor
+	return w, editor
 }
 
 // Generates the UI for the edit window
@@ -33,8 +33,7 @@ func EditUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 	})
 	closeButton := widget.NewButton("Close", func() {
 		cfg.CloseFile()
-		e := *cfg.EditWindow
-		e.Hide()
+		cfg.EditWindow.Hide()
 	})
 
 	// Title
