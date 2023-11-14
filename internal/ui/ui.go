@@ -109,9 +109,15 @@ func (cfg *AppConfig) NewFile() {
 
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
-	openFile(cfg)
-	cfg.setCanSave(true)
-	cfg.ShowEditWindow()
+	w := *cfg.BaseWindow // parent window
+	d := dialog.NewFileOpen(openFile, w)
+	d.SetFilter(filter)
+	d.Resize(fyne.NewSize(600, 600))
+	d.Show()
+	// TODO -- something here to confirm the open file dialog succeeded
+
+	// cfg.setCanSave(true)
+	// cfg.ShowEditWindow()
 }
 
 // SaveFile saves the currently open markdown file locally to disk

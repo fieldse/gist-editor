@@ -48,37 +48,31 @@ func (g *GistFile) Close() {
 // Openable filetypes  filter
 var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
 
-// Open a file from disk in the editor
-func openFile(cfg *AppConfig) {
-
+// openFile is the opener function passed to the Open File dialog
+func openFile(read fyne.URIReadCloser, err error) {
 	w := *cfg.BaseWindow // parent window
-	openFileFunc := func(read fyne.URIReadCloser, err error) {
-		if err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		if read == nil {
-			return
-		}
-		defer read.Close()
-		data, err := io.ReadAll(read)
-		if err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		filePath := read.URI().Path()
-		fileName := read.URI().Name()
-
-		// Initialize a new Gist from the data
-		g := github.Gist{}.New(fileName, string(data))
-		cfg.CurrentFile = &GistFile{
-			Gist:     &g,
-			isLocal:  true,
-			isOpen:   true,
-			localURI: path.Join(filePath, fileName),
-		}
+	if err != nil {
+		dialog.ShowError(err, w)
+		return
 	}
-	openFileDialog := dialog.NewFileOpen(openFileFunc, w)
-	openFileDialog.SetFilter(filter)
-	openFileDialog.Show()
+	if read == nil {
+		return
+	}
+	defer read.Close()
+	data, err := io.ReadAll(read)
+	if err != nil {
+		dialog.ShowError(err, w)
+		return
+	}
+	filePath := read.URI().Path()
+	fileName := read.URI().Name()
+
+	// Initialize a new Gist from the data
+	g := github.Gist{}.New(fileName, string(data))
+	cfg.CurrentFile = &GistFile{
+		Gist:     &g,
+		isLocal:  true,
+		isOpen:   true,
+		localURI: path.Join(filePath, fileName),
+	}
 }
