@@ -23,6 +23,28 @@ type GistFile struct {
 	lastSaved time.Time
 }
 
+// Save saves a Gist file to local storage
+func (g *GistFile) Save() {
+	logger.Debug("todo -- save file...")
+	g.lastSaved = time.Now()
+	g.isDirty = false
+}
+
+// SaveAs saves a Gist file to local storage with a new filename
+func (g *GistFile) SaveAs() {
+	logger.Debug("todo -- save as...")
+	g.lastSaved = time.Now()
+	g.isDirty = false
+}
+
+// Close clears a Gist file to empty and marks as closed
+func (g *GistFile) Close() {
+	g.Gist = &github.Gist{}
+	g.isOpen = false
+	g.isLocal = false
+	g.isDirty = false
+}
+
 // Openable filetypes  filter
 var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
 
@@ -59,23 +81,4 @@ func openFile(cfg *AppConfig) {
 	openFileDialog := dialog.NewFileOpen(openFileFunc, w)
 	openFileDialog.SetFilter(filter)
 	openFileDialog.Show()
-}
-
-// Save the currently open file
-func saveFile() {
-	logger.Debug("todo -- save file...")
-}
-
-// Save the currently open file with new filename
-func saveFileAs() {
-	logger.Debug("todo -- save as...")
-}
-
-// Close the currently open file
-func closeFile(cfg *AppConfig) {
-	cfg.CurrentFile.Gist = &github.Gist{}
-	cfg.CurrentFile.isOpen = false
-	cfg.CurrentFile.isLocal = false
-	cfg.CurrentFile.isDirty = false
-	cfg.Editor.SetText("") // clear the editor text
 }

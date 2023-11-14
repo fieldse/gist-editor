@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"time"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
@@ -118,24 +116,19 @@ func (cfg *AppConfig) OpenFile() {
 
 // SaveFile saves the currently open markdown file locally to disk
 func (cfg *AppConfig) SaveFile() {
-	// TODO
-	saveFile()
-	cfg.CurrentFile.lastSaved = time.Now()
-	cfg.CurrentFile.isDirty = false
+	cfg.CurrentFile.Save()
 }
 
 // SaveFileAs saves the currently open markdown file locally to disk with a new filename
 func (cfg *AppConfig) SaveFileAs() {
-	// TODO
-	saveFileAs()
-	cfg.CurrentFile.lastSaved = time.Now()
-	cfg.CurrentFile.isDirty = false
+	cfg.CurrentFile.SaveAs()
 }
 
 // CloseFile closes the currently open markdown file and closes the editor window
 func (cfg *AppConfig) CloseFile() {
-	closeFile(cfg)
 	cfg.setCanSave(false)
+	cfg.Editor.SetText("") // clear the editor text
+	cfg.CurrentFile.Close()
 	w := *cfg.EditWindow
 	w.Hide()
 }

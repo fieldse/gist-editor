@@ -9,17 +9,15 @@ import (
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
-// Placeholder data for Gist content
-var data = github.ExampleGist
-
 // EditWindow creates a new Editor window, returning the window and a pointer
 // to the content editor
 func EditWindow(cfg *AppConfig) (*fyne.Window, *widget.Entry) {
 	a := *cfg.App
 	w := a.NewWindow("Edit Gist")
+	f := cfg.CurrentFile
 	w.Resize(fyne.NewSize(800, 600))
 
-	content, editor := EditUI(cfg, data, w)
+	content, editor := EditUI(cfg, f.Gist, w)
 	w.SetContent(content)
 	w.CenterOnScreen()
 
@@ -28,8 +26,7 @@ func EditWindow(cfg *AppConfig) (*fyne.Window, *widget.Entry) {
 
 // Generates the UI for the edit window
 // Returns the container, and a pointer to the content editor
-func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry) {
-
+func EditUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry) {
 	spacer := layout.NewSpacer()
 	saveButton := widget.NewButton("Save", func() {
 		cfg.SaveFile()
@@ -41,11 +38,11 @@ func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) (*fyne.Container, *
 	})
 
 	// Title
-	titleBox := TitleBox(gist.Filename)
+	titleBox := TitleBox(g.Filename)
 
 	// Editor input
 	editor := widget.NewMultiLineEntry()
-	editor.SetText(gist.Content)
+	editor.SetText(g.Content)
 	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, editor)
 
 	// Preview pane
