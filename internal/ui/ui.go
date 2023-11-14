@@ -21,19 +21,32 @@ type AppConfig struct {
 	setCanSave        func(bool) // Toggle function to allow saving file
 	GithubTokenModal  *dialog.FormDialog
 	RunUI             func()
-	CurrentFile       GistFile
+	CurrentFile       *GistFile
 	GithubConfig      *github.GithubConfig
+}
+
+// New initializes a new AppConfig instance
+func (AppConfig) New() AppConfig {
+	// Initialize a new Fyne app
+	a := app.New()
+	return AppConfig{
+		App:          &a,
+		GithubConfig: &github.GithubConfig{},
+		CurrentFile: &GistFile{
+			Gist: &github.Gist{},
+		},
+	}
 }
 
 var cfg AppConfig
 
+// Initialize a new app at load time
+func init() {
+	cfg = AppConfig{}.New()
+}
+
 // Generate and store the basic UI components
 func (cfg *AppConfig) MakeUI() {
-
-	// Create app
-	a := app.New()
-	cfg.App = &a
-	cfg.GithubConfig = &github.GithubConfig{}
 
 	// Create base view UI.
 	// This is initialized last, because the buttons require the List and Edit views
@@ -41,7 +54,7 @@ func (cfg *AppConfig) MakeUI() {
 	w := BaseWindow(cfg)
 
 	// Create Gists list window
-	l := ListWindow(a)
+	l := ListWindow(cfg)
 
 	// Create Edit view window, and get the entry editor
 	e, editor := EditWindow(cfg)
@@ -100,6 +113,7 @@ func (cfg *AppConfig) NewFile() {
 func (cfg *AppConfig) OpenFile() {
 	openFile(cfg)
 	cfg.setCanSave(true)
+	cfg.ShowEditWindow()
 }
 
 // SaveFile saves the currently open markdown file locally to disk

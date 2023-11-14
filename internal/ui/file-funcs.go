@@ -46,10 +46,11 @@ func openFile(cfg *AppConfig) {
 		}
 		filePath := read.URI().Path()
 		fileName := read.URI().Name()
-		gist := github.Gist{}.New(fileName, string(data))
 
-		cfg.CurrentFile = GistFile{
-			Gist:     &gist,
+		// Initialize a new Gist from the data
+		g := github.Gist{}.New(fileName, string(data))
+		cfg.CurrentFile = &GistFile{
+			Gist:     &g,
 			isLocal:  true,
 			isOpen:   true,
 			localURI: path.Join(filePath, fileName),
