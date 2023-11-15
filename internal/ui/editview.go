@@ -9,9 +9,39 @@ import (
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
-// EditWindow creates a new Editor window, returning the window and a pointer
-// to the content editor
-func EditWindow(cfg *AppConfig) (fyne.Window, *widget.Entry) {
+// Editor represents the Gist editor window, and provides methods
+// to update the title & content of the editor widget
+type Editor struct {
+	Title      string
+	Content    string
+	IsDirty    bool
+	editor     *widget.Entry // the text editor field
+	editWindow fyne.Window   // the editor window
+}
+
+// Show displays the editor window
+func (e *Editor) Show() {
+	e.editWindow.Show()
+}
+
+// Hide hides the editor window
+func (e *Editor) Hide() {
+	e.editWindow.Hide()
+}
+
+// SetContent sets the contents of the text editor field
+func (e *Editor) SetContent(text string) {
+	e.editor.SetText(text)
+}
+
+// Clear resets the title and contents of the text editor
+func (e *Editor) Clear() {
+	e.Title = "Edit"
+	e.editor.SetText("")
+}
+
+// Create creates a new Editor window and text editor widget
+func (e Editor) Create(cfg *AppConfig) *Editor {
 	a := *cfg.App
 	w := a.NewWindow("Edit Gist")
 	f := cfg.CurrentFile
@@ -21,7 +51,10 @@ func EditWindow(cfg *AppConfig) (fyne.Window, *widget.Entry) {
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return w, editor
+	return &Editor{
+		editor:     editor,
+		editWindow: w,
+	}
 }
 
 // Generates the UI for the edit window
@@ -33,7 +66,7 @@ func EditUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 	})
 	closeButton := widget.NewButton("Close", func() {
 		cfg.CloseFile()
-		cfg.EditWindow.Hide()
+		cfg.Editor.Hide()
 	})
 
 	// Title

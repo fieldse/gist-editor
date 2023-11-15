@@ -81,8 +81,8 @@ func openFile(read fyne.URIReadCloser, err error) {
 	}
 
 	// Update the content of the editor window
-	cfg.Editor.SetText(g.Content)
-	cfg.EditWindow.SetTitle(fileName)
+	cfg.Editor.SetContent(g.Content)
+	cfg.Editor.Title = fileName
 
 	// Show the edit window
 	cfg.setCanSave(true)
