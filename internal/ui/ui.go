@@ -101,6 +101,16 @@ func (cfg *AppConfig) Exit() {
 // NewFile opens a new empty markdown editor
 func (cfg *AppConfig) NewFile() {
 	cfg.setCanSave(true)
+	g := github.Gist{}.New("New Gist.md", "Enter your content here...")
+	cfg.CurrentFile = &GistFile{
+		isLocal:  true,
+		isOpen:   true,
+		isDirty:  false,
+		localURI: "",
+		Gist:     &g,
+	}
+	cfg.Editor.SetText(g.Content)
+	cfg.EditWindow.SetTitle("New Gist")
 	cfg.ShowEditWindow()
 }
 
@@ -108,7 +118,7 @@ func (cfg *AppConfig) NewFile() {
 func (cfg *AppConfig) OpenFile() {
 	d := dialog.NewFileOpen(openFile, cfg.BaseWindow)
 	d.SetFilter(filter)
-	d.Resize(fyne.NewSize(600, 600))
+	d.Resize(fyne.NewSize(800, 600))
 	d.Show()
 }
 

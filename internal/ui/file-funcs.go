@@ -80,6 +80,10 @@ func openFile(read fyne.URIReadCloser, err error) {
 		localURI: path.Join(filePath, fileName),
 	}
 
+	// Update the content of the editor window
+	cfg.Editor.SetText(g.Content)
+	cfg.EditWindow.SetTitle(fileName)
+
 	// Show the edit window
 	cfg.setCanSave(true)
 	cfg.ShowEditWindow()
