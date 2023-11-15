@@ -110,10 +110,6 @@ func (cfg *AppConfig) OpenFile() {
 	d.SetFilter(filter)
 	d.Resize(fyne.NewSize(600, 600))
 	d.Show()
-	// TODO -- something here to confirm the open file dialog succeeded
-
-	// cfg.setCanSave(true)
-	// cfg.ShowEditWindow()
 }
 
 // SaveFile saves the currently open markdown file locally to disk

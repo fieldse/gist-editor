@@ -51,20 +51,25 @@ var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
 // openFile is the opener function passed to the Open File dialog
 func openFile(read fyne.URIReadCloser, err error) {
 	if err != nil {
+		logger.Error("open file failed", err)
 		dialog.ShowError(err, cfg.BaseWindow)
 		return
 	}
 	if read == nil {
+		logger.Debug("open file was canceled")
 		return
 	}
 	defer read.Close()
 	data, err := io.ReadAll(read)
 	if err != nil {
+		logger.Error("read file failed", err)
 		dialog.ShowError(err, cfg.BaseWindow)
 		return
 	}
 	filePath := read.URI().Path()
 	fileName := read.URI().Name()
+
+	logger.Debug("open file succeeded: filename: %s", fileName)
 
 	// Initialize a new Gist from the data
 	g := github.Gist{}.New(fileName, string(data))
@@ -74,4 +79,8 @@ func openFile(read fyne.URIReadCloser, err error) {
 		isOpen:   true,
 		localURI: path.Join(filePath, fileName),
 	}
+
+	// Show the edit window
+	cfg.setCanSave(true)
+	cfg.ShowEditWindow()
 }
