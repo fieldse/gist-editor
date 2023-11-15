@@ -37,7 +37,7 @@ func BaseView(cfg *AppConfig) *fyne.Container {
 
 	// Buttons for "View Gists" and "New Gist"
 	viewGistsButton := widget.NewButton("View Gists", cfg.ShowListWindow)
-	newGistButton := widget.NewButton("New Gist", cfg.ShowEditWindow)
+	newGistButton := widget.NewButton("New Gist", cfg.NewFile)
 	closeBtn := widget.NewButton("Exit", cfg.Exit)
 
 	// Centered buttons grid

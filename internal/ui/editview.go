@@ -9,44 +9,45 @@ import (
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
-// Placeholder data for Gist content
-var data = github.ExampleGist
-
-func EditWindow(cfg *AppConfig) *fyne.Window {
+// EditWindow creates a new Editor window, returning the window and a pointer
+// to the content editor
+func EditWindow(cfg *AppConfig) (fyne.Window, *widget.Entry) {
 	a := *cfg.App
 	w := a.NewWindow("Edit Gist")
+	f := cfg.CurrentFile
 	w.Resize(fyne.NewSize(800, 600))
 
-	content := EditUI(cfg, data, w)
+	content, editor := EditUI(cfg, f.Gist, w)
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return &w
+	return w, editor
 }
 
 // Generates the UI for the edit window
-func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) *fyne.Container {
-
+// Returns the container, and a pointer to the content editor
+func EditUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry) {
 	spacer := layout.NewSpacer()
 	saveButton := widget.NewButton("Save", func() {
 		cfg.SaveFile()
 	})
 	closeButton := widget.NewButton("Close", func() {
-		w.Hide()
+		cfg.CloseFile()
+		cfg.EditWindow.Hide()
 	})
 
 	// Title
-	titleBox := TitleBox(gist.Filename)
+	titleBox := TitleBox(g.Filename)
 
 	// Editor input
-	edit := widget.NewMultiLineEntry()
-	edit.SetText(gist.Content)
-	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, edit)
+	editor := widget.NewMultiLineEntry()
+	editor.SetText(g.Content)
+	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, editor)
 
 	// Preview pane
-	preview := widget.NewRichTextFromMarkdown(edit.Text)
+	preview := widget.NewRichTextFromMarkdown(editor.Text)
 	previewPane := container.NewBorder(widget.NewLabel("Preview"), nil, nil, nil, preview)
-	edit.OnChanged = preview.ParseMarkdown // parse markdown to rich text on changed
+	editor.OnChanged = preview.ParseMarkdown // parse markdown to rich text on changed
 
 	// Split pane view
 	splitView := container.NewHSplit(editPane, previewPane)
@@ -56,5 +57,5 @@ func EditUI(cfg *AppConfig, gist github.Gist, w fyne.Window) *fyne.Container {
 
 	// Wrapper container
 	content := container.NewBorder(titleBox, buttons, nil, nil, splitView)
-	return content
+	return content, editor
 }
