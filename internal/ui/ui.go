@@ -4,7 +4,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
@@ -13,8 +12,7 @@ type AppConfig struct {
 	App               *fyne.App
 	BaseWindow        fyne.Window
 	ListWindow        fyne.Window
-	Editor            *widget.Entry // the content editor
-	EditWindow        fyne.Window
+	Editor            *Editor
 	editWindowVisible bool
 	setCanSave        func(bool) // Toggle function to allow saving file
 	GithubTokenModal  *dialog.FormDialog
@@ -55,7 +53,7 @@ func (cfg *AppConfig) MakeUI() {
 	l := ListWindow(cfg)
 
 	// Create Edit view window, and get the entry editor
-	e, editor := EditWindow(cfg)
+	cfg.Editor = Editor{}.Create(cfg)
 
 	// Create Github token modal
 	g := GithubTokenModal(cfg, w)
@@ -67,8 +65,6 @@ func (cfg *AppConfig) MakeUI() {
 	// Store the windows to cfg
 	cfg.BaseWindow = w
 	cfg.ListWindow = l
-	cfg.EditWindow = e
-	cfg.Editor = editor
 	cfg.GithubTokenModal = g
 	cfg.setCanSave = setCanSave
 
@@ -84,7 +80,7 @@ func (cfg *AppConfig) ShowListWindow() {
 // Show the Edit Gists view
 func (cfg *AppConfig) ShowEditWindow() {
 	cfg.editWindowVisible = true
-	cfg.EditWindow.Show()
+	cfg.Editor.Show()
 }
 
 // Show the Github Token modal
@@ -109,8 +105,8 @@ func (cfg *AppConfig) NewFile() {
 		localURI: "",
 		Gist:     &g,
 	}
-	cfg.Editor.SetText(g.Content)
-	cfg.EditWindow.SetTitle("New Gist")
+	cfg.Editor.SetContent(g.Content)
+	cfg.Editor.Title = "New Gist"
 	cfg.ShowEditWindow()
 }
 
@@ -135,9 +131,9 @@ func (cfg *AppConfig) SaveFileAs() {
 // CloseFile closes the currently open markdown file and closes the editor window
 func (cfg *AppConfig) CloseFile() {
 	cfg.setCanSave(false)
-	cfg.Editor.SetText("") // clear the editor text
+	cfg.Editor.Clear() // clear the editor text and title
 	cfg.CurrentFile.Close()
-	cfg.EditWindow.Hide()
+	cfg.Editor.Hide()
 }
 
 func StartUI() {
