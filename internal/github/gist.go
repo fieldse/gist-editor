@@ -23,12 +23,13 @@ type Gist struct {
 }
 
 // Generate a new Gist
-func (g Gist) New(fileName string) *Gist {
+func (g Gist) New(fileName string, content string) Gist {
 	slug := slugify.Slugify(fileName)
-	return &Gist{
+	return Gist{
 		ID:        slug,
 		Slug:      slug,
 		Filename:  fileName,
+		Content:   content,
 		CreatedAt: time.Now(),
 	}
 }

@@ -39,8 +39,9 @@ func ListWidget(hide func()) *fyne.Container {
 	return content
 }
 
-// Return a List view window
-func ListWindow(a fyne.App) *fyne.Window {
+// ListWindow returns a List view window
+func ListWindow(cfg *AppConfig) fyne.Window {
+	a := *cfg.App
 	w := a.NewWindow("Your Gists")
 	w.Resize(fyne.NewSize(800, 600))
 
@@ -48,5 +49,5 @@ func ListWindow(a fyne.App) *fyne.Window {
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return &w
+	return w
 }

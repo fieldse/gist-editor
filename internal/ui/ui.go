@@ -1,44 +1,50 @@
 package ui
 
 import (
-	"time"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	App              *fyne.App
-	BaseWindow       *fyne.Window
-	ListWindow       *fyne.Window
-	EditWindow       *fyne.Window
-	GithubTokenModal *dialog.FormDialog
-	RunUI            func()
-	CurrentGist      github.Gist
-	CurrentFile      GistFile
-	GithubConfig     *github.GithubConfig
+	App               *fyne.App
+	BaseWindow        fyne.Window
+	ListWindow        fyne.Window
+	Editor            *widget.Entry // the content editor
+	EditWindow        fyne.Window
+	editWindowVisible bool
+	setCanSave        func(bool) // Toggle function to allow saving file
+	GithubTokenModal  *dialog.FormDialog
+	RunUI             func()
+	CurrentFile       *GistFile
+	GithubConfig      *github.GithubConfig
 }
 
-// A GistFile represents a currently open markdown file
-type GistFile struct {
-	gist      github.Gist
-	isOpen    bool
-	isDirty   bool
-	lastSaved time.Time
+// New initializes a new AppConfig instance
+func (AppConfig) New() AppConfig {
+	// Initialize a new Fyne app
+	a := app.New()
+	return AppConfig{
+		App:          &a,
+		GithubConfig: &github.GithubConfig{},
+		CurrentFile: &GistFile{
+			Gist: &github.Gist{},
+		},
+	}
 }
 
 var cfg AppConfig
 
+// Initialize a new app at load time
+func init() {
+	cfg = AppConfig{}.New()
+}
+
 // Generate and store the basic UI components
 func (cfg *AppConfig) MakeUI() {
-
-	// Create app
-	a := app.New()
-	cfg.App = &a
-	cfg.GithubConfig = &github.GithubConfig{}
 
 	// Create base view UI.
 	// This is initialized last, because the buttons require the List and Edit views
@@ -46,23 +52,25 @@ func (cfg *AppConfig) MakeUI() {
 	w := BaseWindow(cfg)
 
 	// Create Gists list window
-	l := ListWindow(a)
+	l := ListWindow(cfg)
 
-	// Create Edit view window
-	e := EditWindow(cfg)
+	// Create Edit view window, and get the entry editor
+	e, editor := EditWindow(cfg)
 
 	// Create Github token modal
 	g := GithubTokenModal(cfg, w)
 
 	// Create the main menu
-	m := FileMenu(cfg)
+	m, setCanSave := FileMenu(cfg)
 	w.SetMainMenu(m)
 
 	// Store the windows to cfg
-	cfg.BaseWindow = &w
+	cfg.BaseWindow = w
 	cfg.ListWindow = l
 	cfg.EditWindow = e
+	cfg.Editor = editor
 	cfg.GithubTokenModal = g
+	cfg.setCanSave = setCanSave
 
 	// Store the show window functions
 	cfg.RunUI = func() { w.ShowAndRun() }
@@ -70,14 +78,13 @@ func (cfg *AppConfig) MakeUI() {
 
 // Show the All Gists list view
 func (cfg *AppConfig) ShowListWindow() {
-	w := *cfg.ListWindow
-	w.Show()
+	cfg.ListWindow.Show()
 }
 
 // Show the Edit Gists view
 func (cfg *AppConfig) ShowEditWindow() {
-	w := *cfg.EditWindow
-	w.Show()
+	cfg.editWindowVisible = true
+	cfg.EditWindow.Show()
 }
 
 // Show the Github Token modal
@@ -88,40 +95,49 @@ func (cfg *AppConfig) ShowGithubTokenModal() {
 
 // Exit the application
 func (cfg *AppConfig) Exit() {
-	w := *cfg.BaseWindow
-	w.Close()
+	cfg.BaseWindow.Close()
+}
+
+// NewFile opens a new empty markdown editor
+func (cfg *AppConfig) NewFile() {
+	cfg.setCanSave(true)
+	g := github.Gist{}.New("New Gist.md", "Enter your content here...")
+	cfg.CurrentFile = &GistFile{
+		isLocal:  true,
+		isOpen:   true,
+		isDirty:  false,
+		localURI: "",
+		Gist:     &g,
+	}
+	cfg.Editor.SetText(g.Content)
+	cfg.EditWindow.SetTitle("New Gist")
+	cfg.ShowEditWindow()
 }
 
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
-	// TODO
-	openFile()
-	cfg.CurrentFile.gist = github.ExampleGist
-	cfg.CurrentFile.isOpen = true
+	d := dialog.NewFileOpen(openFile, cfg.BaseWindow)
+	d.SetFilter(filter)
+	d.Resize(fyne.NewSize(800, 600))
+	d.Show()
 }
 
 // SaveFile saves the currently open markdown file locally to disk
 func (cfg *AppConfig) SaveFile() {
-	// TODO
-	saveFile()
-	cfg.CurrentFile.lastSaved = time.Now()
-	cfg.CurrentFile.isDirty = false
+	cfg.CurrentFile.Save()
 }
 
 // SaveFileAs saves the currently open markdown file locally to disk with a new filename
 func (cfg *AppConfig) SaveFileAs() {
-	// TODO
-	saveFileAs()
-	cfg.CurrentFile.lastSaved = time.Now()
-	cfg.CurrentFile.isDirty = false
+	cfg.CurrentFile.SaveAs()
 }
 
-// CloseFile closes the currently open markdown file
+// CloseFile closes the currently open markdown file and closes the editor window
 func (cfg *AppConfig) CloseFile() {
-	// TODO
-	cfg.CurrentFile.gist = github.Gist{}
-	cfg.CurrentFile.isOpen = false
-	closeFile()
+	cfg.setCanSave(false)
+	cfg.Editor.SetText("") // clear the editor text
+	cfg.CurrentFile.Close()
+	cfg.EditWindow.Hide()
 }
 
 func StartUI() {

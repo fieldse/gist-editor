@@ -19,3 +19,8 @@ func Debug(msg string, a ...interface{}) {
 func Warn(msg string, a ...interface{}) {
 	log.Printf("[warn] %s", fmt.Sprintf(msg, a...))
 }
+
+// Log error message to console
+func Error(msg string, err error) {
+	log.Printf("[error] %s - %s", msg, err.Error())
+}
