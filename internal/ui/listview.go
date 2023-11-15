@@ -8,17 +8,42 @@ import (
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
-// Returns a list view widget of all user gists
-func ListWidget(hide func()) *fyne.Container {
-	spacer := layout.NewSpacer()
-	okButton := widget.NewButton("Ok", hide)
+// ListView is the user's Gist list view window
+type ListView struct {
+	window fyne.Window
+	list   *widget.List
+	gists  []github.Gist
+}
 
-	// Example content widget
+// Show shows the list view window
+func (l *ListView) Show() {
+	l.window.Show()
+}
+
+// Hide Hides the list view window
+func (l *ListView) Hide() {
+	l.window.Hide()
+}
+
+// SetGists populates the list view data
+func (l *ListView) SetGists(data []github.Gist) {
+	l.gists = data
+	l.list = newList(data)
+}
+
+// Clear clears the list view data
+func (l *ListView) Clear() {
+	l.gists = []github.Gist{}
+	l.list = newList(l.gists)
+}
+
+// newList returns a new Fyne list widget with the given Gist data
+func newList(gists []github.Gist) *widget.List {
 	var data []string
-	for _, x := range github.MockGistData {
+	for _, x := range gists {
 		data = append(data, x.Filename)
 	}
-	list := widget.NewList(
+	l := widget.NewList(
 		func() int {
 			return len(data)
 		},
@@ -28,9 +53,18 @@ func ListWidget(hide func()) *fyne.Container {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(data[i])
 		})
+	return l
+}
 
+// Returns a list view widget of all user gists
+func listWidget(hide func(), gists []github.Gist) *fyne.Container {
+	spacer := layout.NewSpacer()
+	okButton := widget.NewButton("Ok", hide)
+
+	// List data view
+	l := newList(gists)
 	titleContainer := TitleBox("Your Gists")
-	listContainer := container.NewStack(list)
+	listContainer := container.NewStack(l)
 
 	buttons := ButtonContainer(3, spacer, spacer, okButton)
 
@@ -39,15 +73,17 @@ func ListWidget(hide func()) *fyne.Container {
 	return content
 }
 
-// ListWindow returns a List view window
-func ListWindow(cfg *AppConfig) fyne.Window {
+// New creates a ListView instance with list view window
+func (l ListView) New(cfg *AppConfig) *ListView {
 	a := *cfg.App
 	w := a.NewWindow("Your Gists")
 	w.Resize(fyne.NewSize(800, 600))
 
-	content := ListWidget(w.Hide)
+	content := listWidget(w.Hide, []github.Gist{})
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return w
+	return &ListView{
+		window: w,
+	}
 }
