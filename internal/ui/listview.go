@@ -10,18 +10,28 @@ import (
 
 // ListView is the user's Gist list view window
 type ListView struct {
-	listWindow fyne.Window
-	gists      []GistFile
+	window fyne.Window
+	gists  []GistFile
 }
 
 // Show shows the list view window
 func (l *ListView) Show() {
-	l.listWindow.Show()
+	l.window.Show()
+}
+
+// Hide Hides the list view window
+func (l *ListView) Hide() {
+	l.window.Hide()
 }
 
 // SetGists populates the list view data
 func (l *ListView) SetGists(data []GistFile) {
 	l.gists = data
+}
+
+// Clear clears the list view data
+func (l *ListView) Clear() {
+	l.gists = []GistFile{}
 }
 
 // Returns a list view widget of all user gists
@@ -66,6 +76,6 @@ func (l ListView) New(cfg *AppConfig) *ListView {
 	w.CenterOnScreen()
 
 	return &ListView{
-		listWindow: w,
+		window: w,
 	}
 }
