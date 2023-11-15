@@ -11,7 +11,8 @@ import (
 // ListView is the user's Gist list view window
 type ListView struct {
 	window fyne.Window
-	gists  []GistFile
+	list   *widget.List
+	gists  []github.Gist
 }
 
 // Show shows the list view window
@@ -25,26 +26,24 @@ func (l *ListView) Hide() {
 }
 
 // SetGists populates the list view data
-func (l *ListView) SetGists(data []GistFile) {
+func (l *ListView) SetGists(data []github.Gist) {
 	l.gists = data
+	l.list = newList(data)
 }
 
 // Clear clears the list view data
 func (l *ListView) Clear() {
-	l.gists = []GistFile{}
+	l.gists = []github.Gist{}
+	l.list = newList(l.gists)
 }
 
-// Returns a list view widget of all user gists
-func listWidget(hide func()) *fyne.Container {
-	spacer := layout.NewSpacer()
-	okButton := widget.NewButton("Ok", hide)
-
-	// Example content widget
+// newList returns a new Fyne list widget with the given Gist data
+func newList(gists []github.Gist) *widget.List {
 	var data []string
-	for _, x := range github.MockGistData {
+	for _, x := range gists {
 		data = append(data, x.Filename)
 	}
-	list := widget.NewList(
+	l := widget.NewList(
 		func() int {
 			return len(data)
 		},
@@ -54,9 +53,18 @@ func listWidget(hide func()) *fyne.Container {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(data[i])
 		})
+	return l
+}
 
+// Returns a list view widget of all user gists
+func listWidget(hide func(), gists []github.Gist) *fyne.Container {
+	spacer := layout.NewSpacer()
+	okButton := widget.NewButton("Ok", hide)
+
+	// List data view
+	l := newList(gists)
 	titleContainer := TitleBox("Your Gists")
-	listContainer := container.NewStack(list)
+	listContainer := container.NewStack(l)
 
 	buttons := ButtonContainer(3, spacer, spacer, okButton)
 
@@ -71,7 +79,7 @@ func (l ListView) New(cfg *AppConfig) *ListView {
 	w := a.NewWindow("Your Gists")
 	w.Resize(fyne.NewSize(800, 600))
 
-	content := listWidget(w.Hide)
+	content := listWidget(w.Hide, []github.Gist{})
 	w.SetContent(content)
 	w.CenterOnScreen()
 
