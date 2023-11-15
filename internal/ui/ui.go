@@ -11,7 +11,7 @@ import (
 type AppConfig struct {
 	App               *fyne.App
 	BaseWindow        fyne.Window
-	ListWindow        fyne.Window
+	ListWindow        *ListView
 	Editor            *Editor
 	editWindowVisible bool
 	setCanSave        func(bool) // Toggle function to allow saving file
@@ -50,10 +50,10 @@ func (cfg *AppConfig) MakeUI() {
 	w := BaseWindow(cfg)
 
 	// Create Gists list window
-	l := ListWindow(cfg)
+	cfg.ListWindow = ListView{}.New(cfg)
 
 	// Create Edit view window, and get the entry editor
-	cfg.Editor = Editor{}.Create(cfg)
+	cfg.Editor = Editor{}.New(cfg)
 
 	// Create Github token modal
 	g := GithubTokenModal(cfg, w)
@@ -64,7 +64,7 @@ func (cfg *AppConfig) MakeUI() {
 
 	// Store the windows to cfg
 	cfg.BaseWindow = w
-	cfg.ListWindow = l
+
 	cfg.GithubTokenModal = g
 	cfg.setCanSave = setCanSave
 

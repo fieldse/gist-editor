@@ -40,14 +40,14 @@ func (e *Editor) Clear() {
 	e.editor.SetText("")
 }
 
-// Create creates a new Editor window and text editor widget
-func (e Editor) Create(cfg *AppConfig) *Editor {
+// New creates a new Editor window and text editor widget
+func (e Editor) New(cfg *AppConfig) *Editor {
 	a := *cfg.App
 	w := a.NewWindow("Edit Gist")
 	f := cfg.CurrentFile
 	w.Resize(fyne.NewSize(800, 600))
 
-	content, editor := EditUI(cfg, f.Gist, w)
+	content, editor := editUI(cfg, f.Gist, w)
 	w.SetContent(content)
 	w.CenterOnScreen()
 
@@ -59,7 +59,7 @@ func (e Editor) Create(cfg *AppConfig) *Editor {
 
 // Generates the UI for the edit window
 // Returns the container, and a pointer to the content editor
-func EditUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry) {
+func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry) {
 	spacer := layout.NewSpacer()
 	saveButton := widget.NewButton("Save", func() {
 		cfg.SaveFile()

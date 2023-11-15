@@ -8,8 +8,24 @@ import (
 	"github.com/fieldse/gist-editor/internal/github"
 )
 
+// ListView is the user's Gist list view window
+type ListView struct {
+	listWindow fyne.Window
+	gists      []GistFile
+}
+
+// Show shows the list view window
+func (l *ListView) Show() {
+	l.listWindow.Show()
+}
+
+// SetGists populates the list view data
+func (l *ListView) SetGists(data []GistFile) {
+	l.gists = data
+}
+
 // Returns a list view widget of all user gists
-func ListWidget(hide func()) *fyne.Container {
+func listWidget(hide func()) *fyne.Container {
 	spacer := layout.NewSpacer()
 	okButton := widget.NewButton("Ok", hide)
 
@@ -39,15 +55,17 @@ func ListWidget(hide func()) *fyne.Container {
 	return content
 }
 
-// ListWindow returns a List view window
-func ListWindow(cfg *AppConfig) fyne.Window {
+// New creates a ListView instance with list view window
+func (l ListView) New(cfg *AppConfig) *ListView {
 	a := *cfg.App
 	w := a.NewWindow("Your Gists")
 	w.Resize(fyne.NewSize(800, 600))
 
-	content := ListWidget(w.Hide)
+	content := listWidget(w.Hide)
 	w.SetContent(content)
 	w.CenterOnScreen()
 
-	return w
+	return &ListView{
+		listWindow: w,
+	}
 }
