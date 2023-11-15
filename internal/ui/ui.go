@@ -10,11 +10,10 @@ import (
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
 	App               *fyne.App
-	BaseWindow        fyne.Window
+	MainWindow        MainWindow
 	ListWindow        *ListView
 	Editor            *Editor
 	editWindowVisible bool
-	setCanSave        func(bool) // Toggle function to allow saving file
 	GithubTokenModal  *dialog.FormDialog
 	RunUI             func()
 	CurrentFile       *GistFile
@@ -44,10 +43,8 @@ func init() {
 // Generate and store the basic UI components
 func (cfg *AppConfig) MakeUI() {
 
-	// Create base view UI.
-	// This is initialized last, because the buttons require the List and Edit views
-	// to be initialized and stored, to attach their Show functions.
-	w := BaseWindow(cfg)
+	// Create base app window.
+	cfg.MainWindow = MainWindow{}.New(cfg)
 
 	// Create Gists list window
 	cfg.ListWindow = ListView{}.New(cfg)
@@ -56,20 +53,12 @@ func (cfg *AppConfig) MakeUI() {
 	cfg.Editor = Editor{}.New(cfg)
 
 	// Create Github token modal
-	g := GithubTokenModal(cfg, w)
-
-	// Create the main menu
-	m, setCanSave := FileMenu(cfg)
-	w.SetMainMenu(m)
-
-	// Store the windows to cfg
-	cfg.BaseWindow = w
+	g := GithubTokenModal(cfg)
 
 	cfg.GithubTokenModal = g
-	cfg.setCanSave = setCanSave
 
 	// Store the show window functions
-	cfg.RunUI = func() { w.ShowAndRun() }
+	cfg.RunUI = cfg.MainWindow.ShowAndRun
 }
 
 // Show the All Gists list view
@@ -91,12 +80,12 @@ func (cfg *AppConfig) ShowGithubTokenModal() {
 
 // Exit the application
 func (cfg *AppConfig) Exit() {
-	cfg.BaseWindow.Close()
+	cfg.MainWindow.Close()
 }
 
 // NewFile opens a new empty markdown editor
 func (cfg *AppConfig) NewFile() {
-	cfg.setCanSave(true)
+	cfg.MainWindow.SetCanSave(true)
 	g := github.Gist{}.New("New Gist.md", "Enter your content here...")
 	cfg.CurrentFile = &GistFile{
 		isLocal:  true,
@@ -112,7 +101,7 @@ func (cfg *AppConfig) NewFile() {
 
 // OpenFile opens a local markdown file
 func (cfg *AppConfig) OpenFile() {
-	d := dialog.NewFileOpen(openFile, cfg.BaseWindow)
+	d := dialog.NewFileOpen(openFile, cfg.MainWindow.Window)
 	d.SetFilter(filter)
 	d.Resize(fyne.NewSize(800, 600))
 	d.Show()
@@ -130,7 +119,7 @@ func (cfg *AppConfig) SaveFileAs() {
 
 // CloseFile closes the currently open markdown file and closes the editor window
 func (cfg *AppConfig) CloseFile() {
-	cfg.setCanSave(false)
+	cfg.MainWindow.SetCanSave(false)
 	cfg.Editor.Clear() // clear the editor text and title
 	cfg.CurrentFile.Close()
 	cfg.Editor.Hide()
