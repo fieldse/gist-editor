@@ -8,8 +8,25 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// Intitialize and return the base window
-func BaseWindow(cfg *AppConfig) fyne.Window {
+// MainWindow is the main app window with menu & methods for create & show
+type MainWindow struct {
+	Window     fyne.Window
+	menu       *fyne.MainMenu
+	SetCanSave func(bool) // toggle whether Save / SaveAs is allowed in the main menu
+}
+
+// Show shows the main window and starts the application
+func (m MainWindow) ShowAndRun() {
+	m.Window.ShowAndRun()
+}
+
+// Close Closes the main window and starts the application
+func (m MainWindow) Close() {
+	m.Window.Close()
+}
+
+// New intitializes the main window UI and returns a MainWindow instance
+func (m MainWindow) New(cfg *AppConfig) MainWindow {
 	a := *cfg.App
 
 	// Generate new master window, set size, center it on screen
@@ -19,14 +36,22 @@ func BaseWindow(cfg *AppConfig) fyne.Window {
 	w.CenterOnScreen()
 
 	// Generate window content UI
-	content := BaseView(cfg)
+	content := mainWindowUI(cfg)
 	w.SetContent(content)
 
-	return w
+	// Create the main menu
+	menu, setCanSave := FileMenu(cfg)
+	w.SetMainMenu(menu)
+
+	return MainWindow{
+		Window:     w,
+		menu:       menu,
+		SetCanSave: setCanSave,
+	}
 }
 
-// Base view upon opening the app
-func BaseView(cfg *AppConfig) *fyne.Container {
+// mainWindowUI creates the main window UI content
+func mainWindowUI(cfg *AppConfig) *fyne.Container {
 
 	// Title
 	title := TitleText("Welcome to the Gist editor!")

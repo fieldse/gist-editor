@@ -8,7 +8,8 @@ import (
 	"github.com/fieldse/gist-editor/internal/logger"
 )
 
-func GithubTokenModal(cfg *AppConfig, w fyne.Window) *dialog.FormDialog {
+func GithubTokenModal(cfg *AppConfig) *dialog.FormDialog {
+	w := cfg.MainWindow.Window
 	input := widget.NewEntry()
 	input.PlaceHolder = "Enter your Github API token..."
 	var tempVal string = ""
