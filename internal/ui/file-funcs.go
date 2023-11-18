@@ -50,9 +50,10 @@ var filter = storage.NewExtensionFileFilter([]string{".md", ".txt"})
 
 // openFile is the opener function passed to the Open File dialog
 func openFile(read fyne.URIReadCloser, err error) {
+	w := cfg.MainWindow.Window
 	if err != nil {
 		logger.Error("open file failed", err)
-		dialog.ShowError(err, cfg.BaseWindow)
+		dialog.ShowError(err, w)
 		return
 	}
 	if read == nil {
@@ -63,7 +64,7 @@ func openFile(read fyne.URIReadCloser, err error) {
 	data, err := io.ReadAll(read)
 	if err != nil {
 		logger.Error("read file failed", err)
-		dialog.ShowError(err, cfg.BaseWindow)
+		dialog.ShowError(err, w)
 		return
 	}
 	filePath := read.URI().Path()
@@ -85,6 +86,6 @@ func openFile(read fyne.URIReadCloser, err error) {
 	cfg.Editor.Title = fileName
 
 	// Show the edit window
-	cfg.setCanSave(true)
+	cfg.MainWindow.SetCanSave(true)
 	cfg.ShowEditWindow()
 }
