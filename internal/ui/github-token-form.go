@@ -47,7 +47,28 @@ func GithubTokenModal(cfg *AppConfig) *dialog.FormDialog {
 }
 
 // saveToken saves the Github token to a local file
-func saveToken() {}
+func saveToken(token string) error {
+	fp := githubConfigPath()
+
+	// Ensure the user config dir exists
+	configDir := userConfigPath()
+	if !dirExists(configDir) {
+		err := os.Mkdir(configDir, 0755)
+		if err != nil {
+			return fmt.Errorf("create user config dir failed: %w", err)
+		}
+		logger.Info("created user config directory at %s", configDir)
+
+	}
+	// Save the token to file
+	data := []byte(token)
+	err := os.WriteFile(fp, data, 0644)
+	if err != nil {
+		return fmt.Errorf("save token to file failed: %w", err)
+	}
+	logger.Info("saved Github token: %s", fp)
+	return nil
+}
 
 // readToken reads the Github token from a local file
 // returns error on empty
@@ -68,10 +89,17 @@ func readToken() (string, error) {
 
 }
 
-// fileExists checks if a file exists at the given path
+// fileExists checks if a file exists at the given path.
+// Returns error if it's a directory
 func fileExists(fp string) bool {
-	_, err := os.Stat(fp)
-	return err == nil
+	data, err := os.Stat(fp)
+	return err == nil && !data.IsDir()
+}
+
+// dirExists checks if a directory exists at the given path
+func dirExists(fp string) bool {
+	data, err := os.Stat(fp)
+	return err == nil && data.IsDir()
 }
 
 // githubConfigPath returns the path to the github token config file
