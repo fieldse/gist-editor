@@ -19,7 +19,39 @@ import (
 var CONFIG_DIR_NAME = "./gist-editor"                                    // FIXME: should not be hardcoded
 var GITHUB_CONFIG_FILE = path.Join(userConfigPath(), "github-token.txt") // FIXME: Improve file format
 
-func GithubTokenModal(cfg *AppConfig) *dialog.FormDialog {
+// GithubSettingsWindow is the the Github config settings window
+type GithubSettingsWindow struct {
+	dialog     *dialog.FormDialog // the main form
+	tokenField *widget.Entry      // the Github token field
+}
+
+// New returns a new instance of the GithubSettingsWindow
+func (g GithubSettingsWindow) New(cfg *AppConfig) *GithubSettingsWindow {
+	w, entry := githubSettingsUI(cfg)
+	return &GithubSettingsWindow{
+		dialog:     w,
+		tokenField: entry,
+	}
+}
+
+// Update updates the placeholder value of the token in the Github settings modal
+func (g GithubSettingsWindow) Update(token string) {
+	g.tokenField.SetText(token)
+}
+
+// Show shows the Github settings modal
+func (g GithubSettingsWindow) Show() {
+	g.dialog.Show()
+}
+
+// Hide hides the Github settings modal
+func (g GithubSettingsWindow) Hide() {
+	g.dialog.Hide()
+}
+
+// githubSettingsUI generates the form and modal for Githut settings.
+// Returns the form dialog and the Github token entry field.
+func githubSettingsUI(cfg *AppConfig) (*dialog.FormDialog, *widget.Entry) {
 	w := cfg.MainWindow.Window
 	input := widget.NewEntry()
 	input.PlaceHolder = "Enter your Github API token..."
@@ -32,6 +64,7 @@ func GithubTokenModal(cfg *AppConfig) *dialog.FormDialog {
 	}
 	// Onsave for the form dialog
 	onSave := func(b bool) {
+		var originalVal = input.Text
 		if !b {
 			return
 		}
@@ -39,6 +72,7 @@ func GithubTokenModal(cfg *AppConfig) *dialog.FormDialog {
 		if err != nil {
 			d := dialog.NewError(err, w)
 			d.Show()
+			input.SetText(originalVal) // Reset to original state
 			return
 		}
 		d := dialog.NewInformation("Github token saved", "Github token updated", w)
@@ -47,12 +81,10 @@ func GithubTokenModal(cfg *AppConfig) *dialog.FormDialog {
 		cfg.GithubConfig.GithubAPIToken = tempVal
 	}
 	var formItems []*widget.FormItem
-	formItems = append(formItems,
-		widget.NewFormItem("Github API token", input),
-	)
+	formItems = append(formItems, widget.NewFormItem("Github API token", input))
 	d := dialog.NewForm("Github API Token", "Save", "Cancel", formItems, onSave, w)
 	d.Resize(fyne.NewSize(400, 200))
-	return d
+	return d, input
 }
 
 // ReadGithubToken reads and returns the Github API token, if it exists.
@@ -88,7 +120,7 @@ func saveToken(token string) error {
 	if err != nil {
 		return fmt.Errorf("save token to file failed: %w", err)
 	}
-	logger.Info("saved Github token: %s", GITHUB_CONFIG_FILE)
+	logger.Debug("saved Github token: %s", GITHUB_CONFIG_FILE)
 	return nil
 }
 
