@@ -17,15 +17,18 @@ type Editor struct {
 	IsDirty    bool
 	editor     *widget.Entry // the text editor field
 	editWindow fyne.Window   // the editor window
+	IsVisible  bool
 }
 
 // Show displays the editor window
 func (e *Editor) Show() {
+	e.IsVisible = true
 	e.editWindow.Show()
 }
 
 // Hide hides the editor window
 func (e *Editor) Hide() {
+	e.IsVisible = false
 	e.editWindow.Hide()
 }
 

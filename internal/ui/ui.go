@@ -9,15 +9,14 @@ import (
 
 // Basic app structure, with windows and other data to be passed around
 type AppConfig struct {
-	App               *fyne.App
-	MainWindow        MainWindow
-	ListWindow        *ListView
-	Editor            *Editor
-	editWindowVisible bool
-	GithubTokenModal  *dialog.FormDialog
-	RunUI             func()
-	CurrentFile       *GistFile
-	GithubConfig      *github.GithubConfig
+	App                  *fyne.App
+	MainWindow           MainWindow
+	ListWindow           *ListView
+	Editor               *Editor
+	RunUI                func()
+	CurrentFile          *GistFile
+	GithubConfig         *github.GithubConfig
+	GithubSettingsWindow *GithubSettingsWindow
 }
 
 // New initializes a new AppConfig instance
@@ -53,9 +52,7 @@ func (cfg *AppConfig) MakeUI() {
 	cfg.Editor = Editor{}.New(cfg)
 
 	// Create Github token modal
-	g := GithubTokenModal(cfg)
-
-	cfg.GithubTokenModal = g
+	cfg.GithubSettingsWindow = GithubSettingsWindow{}.New(cfg)
 
 	// Store the show window functions
 	cfg.RunUI = cfg.MainWindow.ShowAndRun
@@ -68,13 +65,12 @@ func (cfg *AppConfig) ShowListWindow() {
 
 // Show the Edit Gists view
 func (cfg *AppConfig) ShowEditWindow() {
-	cfg.editWindowVisible = true
 	cfg.Editor.Show()
 }
 
 // Show the Github Token modal
 func (cfg *AppConfig) ShowGithubTokenModal() {
-	w := *cfg.GithubTokenModal
+	w := *cfg.GithubSettingsWindow
 	w.Show()
 }
 
@@ -125,7 +121,13 @@ func (cfg *AppConfig) CloseFile() {
 	cfg.Editor.Hide()
 }
 
+// ReadConfig reads and stores the config settings from the config file
+func (cfg *AppConfig) ReadConfig() {
+	cfg.GithubSettingsWindow.Load(cfg)
+}
+
 func StartUI() {
 	cfg.MakeUI()
+	cfg.ReadConfig()
 	cfg.RunUI()
 }
