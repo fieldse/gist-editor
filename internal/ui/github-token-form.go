@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"regexp"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
@@ -34,9 +35,16 @@ func (g GithubSettingsWindow) New(cfg *AppConfig) *GithubSettingsWindow {
 	}
 }
 
-// Update updates the placeholder value of the token in the Github settings modal
-func (g GithubSettingsWindow) Update(token string) {
-	g.tokenField.SetText(token)
+// Load reads the github setting from file, and stores to the app config.
+func (g *GithubSettingsWindow) Load(cfg *AppConfig) {
+	token, err := ReadGithubToken()
+	if err != nil {
+		logger.Error("load Github settings failed", err)
+		return
+	}
+	logger.Info("github settings loaded from %s", GITHUB_CONFIG_FILE)
+	g.tokenField.SetText(token) // update the UI placeholder
+	cfg.GithubConfig.GithubAPIToken = token
 }
 
 // Show shows the Github settings modal
@@ -64,13 +72,13 @@ func githubSettingsUI(cfg *AppConfig) (*dialog.FormDialog, *widget.Entry) {
 	}
 	// Onsave for the form dialog
 	onSave := func(b bool) {
-		var originalVal = input.Text
-		if !b {
+		if !b { // if the user cancels the dialog
 			return
 		}
+		var originalVal = input.Text
 		err := saveToken(tempVal)
 		if err != nil {
-			d := dialog.NewError(err, w)
+			d := dialog.NewError(fmt.Errorf("error saving token: %s", err.Error()), w)
 			d.Show()
 			input.SetText(originalVal) // Reset to original state
 			return
@@ -94,16 +102,21 @@ func ReadGithubToken() (string, error) {
 	}
 	token, err := readToken()
 	if err != nil {
-		logger.Error("read github config file failed", err)
 		return "", err
 	}
 	return token, nil
 }
 
+// Regex to validate the token is alphanumeric
+var rgx = regexp.MustCompile("^[A-Za-z0-9]*$")
+
 // saveToken saves the Github token to a local file
 func saveToken(token string) error {
 	if token == "" {
 		return fmt.Errorf("token is empty")
+	}
+	if !rgx.MatchString(token) {
+		return fmt.Errorf("token must be alphanumeric characters")
 	}
 	// Ensure the user config dir exists
 	configDir := userConfigPath()
