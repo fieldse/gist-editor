@@ -37,10 +37,12 @@ func GithubTokenModal(cfg *AppConfig) *dialog.FormDialog {
 		}
 		err := saveToken(tempVal)
 		if err != nil {
-			dialog.NewError(err, w)
+			d := dialog.NewError(err, w)
+			d.Show()
 			return
 		}
-		dialog.NewInformation("Github token saved", "Github token updated", w)
+		d := dialog.NewInformation("Github token saved", "Github token updated", w)
+		d.Show()
 		logger.Debug("Github API token saved: %v", tempVal)
 		cfg.GithubConfig.GithubAPIToken = tempVal
 	}
