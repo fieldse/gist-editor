@@ -2,8 +2,11 @@
 package ui
 
 import (
+	"os"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
+	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // MarkdownToolbar represents a toolbar for the markdown text editor
@@ -13,23 +16,6 @@ type MarkdownToolbar struct {
 
 func (m MarkdownToolbar) New() *MarkdownToolbar {
 	return &MarkdownToolbar{}
-}
-
-// toolbarIcons is the set of toolbar item icons
-type toolbarIcons struct {
-	H1Icon              fyne.Resource
-	H2Icon              fyne.Resource
-	H3Icon              fyne.Resource
-	BoldIcon            fyne.Resource
-	ItalicIcon          fyne.Resource
-	LinkIcon            fyne.Resource
-	ImageIcon           fyne.Resource
-	QuoteBlockIcon      fyne.Resource
-	CodeBlockIcon       fyne.Resource
-	InlineCodeBlockIcon fyne.Resource
-	PageBreakIcon       fyne.Resource
-	UndoIcon            fyne.Resource
-	RedoIcon            fyne.Resource
 }
 
 // toolbarActions is the action functions for the toolbar items
@@ -54,14 +40,14 @@ func newToolbarActions() toolbarActions {
 	return toolbarActions{} // FIXME -- add functions
 }
 
-// newToolbarIcons returns a new set of toolbar icons
-func newToolbarIcons() toolbarIcons {
-	return toolbarIcons{} // FIXME -- add toolbar icons
-}
-
 // MarkdownToolbar returns toolbar component for the markdown text editor
+// Will throw error and exit program on failure
 func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
-	icons := newToolbarIcons()
+	icons, err := loadAllIcons()
+	if err != nil {
+		logger.Error("load resources failed", err)
+		os.Exit(1)
+	}
 	actions := newToolbarActions()
 
 	// Menu items
