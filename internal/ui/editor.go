@@ -75,10 +75,16 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 	// Title
 	titleBox := TitleBox(g.Filename)
 
+	// Text editor toolbar
+	textEditorToolbar := MarkdownToolbarUI(cfg)
+
 	// Editor input
 	editor := widget.NewMultiLineEntry()
 	editor.SetText(g.Content)
-	editPane := container.NewBorder(widget.NewLabel("Edit"), nil, nil, nil, editor)
+
+	// Top section -- edit toolbar & title
+	topBox := container.NewVBox(widget.NewLabel("Edit"), textEditorToolbar)
+	editPane := container.NewBorder(topBox, nil, nil, nil, editor)
 
 	// Preview pane
 	preview := widget.NewRichTextFromMarkdown(editor.Text)
