@@ -35,9 +35,30 @@ type toolbarActions struct {
 	RedoAction            func()
 }
 
+func placeholderAction(actionName string) func() {
+	return func() {
+		logger.Debug("placeholder action called for %s", actionName)
+	}
+}
+
 // newToolbarActions returns a new toolbar actions struct
 func newToolbarActions() toolbarActions {
-	return toolbarActions{} // FIXME -- add functions
+	// FIXME -- add functions
+	return toolbarActions{
+		H1Action:              placeholderAction("H1Action"),
+		H2Action:              placeholderAction("H2Action"),
+		H3Action:              placeholderAction("H3Action"),
+		BoldAction:            placeholderAction("BoldAction"),
+		ItalicAction:          placeholderAction("ItalicAction"),
+		LinkAction:            placeholderAction("LinkAction"),
+		ImageAction:           placeholderAction("ImageAction"),
+		QuoteBlockAction:      placeholderAction("QuoteBlockAction"),
+		CodeBlockAction:       placeholderAction("CodeBlockAction"),
+		InlineCodeBlockAction: placeholderAction("InlineCodeBlockAction"),
+		PageBreakAction:       placeholderAction("PageBreakAction"),
+		UndoAction:            placeholderAction("UndoAction"),
+		RedoAction:            placeholderAction("RedoAction"),
+	}
 }
 
 // MarkdownToolbar returns toolbar component for the markdown text editor
