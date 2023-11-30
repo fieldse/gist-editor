@@ -12,6 +12,10 @@ Cross-platform, should run on Windows, Mac, and Linux.
 
 Install from source, or pull down the binary executables from Releases.
 
+## Credits & Attributions
+
+- Icons by [Icon mania at Flaticon](https://www.flaticon.com/free-icons/edit-tools)
+
 ## License
 
 - GNU GPL version 3
