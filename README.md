@@ -14,7 +14,7 @@ Install from source, or pull down the binary executables from Releases.
 
 ## Credits & Attributions
 
-- Icons by [Icon mania at Flaticon](https://www.flaticon.com/free-icons/edit-tools)
+- Icons by [Icon mania at Flaticon](https://www.flaticon.com/authors/icon-mania)
 
 ## License
 
