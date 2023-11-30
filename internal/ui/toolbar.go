@@ -20,21 +20,21 @@ func (m MarkdownToolbar) New() *MarkdownToolbar {
 
 // toolbarActions is the action functions for the toolbar items
 type toolbarActions struct {
-	H1Action              func()
-	H2Action              func()
-	H3Action              func()
-	BoldAction            func()
-	ItalicAction          func()
-	LinkAction            func()
-	ImageAction           func()
-	QuoteBlockAction      func()
-	CodeBlockAction       func()
-	InlineCodeBlockAction func()
-	PageBreakAction       func()
-	UndoAction            func()
-	RedoAction            func()
+	H1Action         func()
+	H2Action         func()
+	H3Action         func()
+	BoldAction       func()
+	ItalicAction     func()
+	LinkAction       func()
+	ImageAction      func()
+	QuoteBlockAction func()
+	CodeBlockAction  func()
+	PageBreakAction  func()
+	UndoAction       func()
+	RedoAction       func()
 }
 
+// FIXME -- add functions
 func placeholderAction(actionName string) func() {
 	return func() {
 		logger.Debug("placeholder action called for %s", actionName)
@@ -43,21 +43,19 @@ func placeholderAction(actionName string) func() {
 
 // newToolbarActions returns a new toolbar actions struct
 func newToolbarActions() toolbarActions {
-	// FIXME -- add functions
 	return toolbarActions{
-		H1Action:              placeholderAction("H1Action"),
-		H2Action:              placeholderAction("H2Action"),
-		H3Action:              placeholderAction("H3Action"),
-		BoldAction:            placeholderAction("BoldAction"),
-		ItalicAction:          placeholderAction("ItalicAction"),
-		LinkAction:            placeholderAction("LinkAction"),
-		ImageAction:           placeholderAction("ImageAction"),
-		QuoteBlockAction:      placeholderAction("QuoteBlockAction"),
-		CodeBlockAction:       placeholderAction("CodeBlockAction"),
-		InlineCodeBlockAction: placeholderAction("InlineCodeBlockAction"),
-		PageBreakAction:       placeholderAction("PageBreakAction"),
-		UndoAction:            placeholderAction("UndoAction"),
-		RedoAction:            placeholderAction("RedoAction"),
+		H1Action:         placeholderAction("H1Action"),
+		H2Action:         placeholderAction("H2Action"),
+		H3Action:         placeholderAction("H3Action"),
+		BoldAction:       placeholderAction("BoldAction"),
+		ItalicAction:     placeholderAction("ItalicAction"),
+		LinkAction:       placeholderAction("LinkAction"),
+		ImageAction:      placeholderAction("ImageAction"),
+		QuoteBlockAction: placeholderAction("QuoteBlockAction"),
+		CodeBlockAction:  placeholderAction("CodeBlockAction"),
+		PageBreakAction:  placeholderAction("PageBreakAction"),
+		UndoAction:       placeholderAction("UndoAction"),
+		RedoAction:       placeholderAction("RedoAction"),
 	}
 }
 
@@ -82,7 +80,6 @@ func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 		widget.NewToolbarAction(icons.ImageIcon, actions.ImageAction),
 		widget.NewToolbarAction(icons.QuoteBlockIcon, actions.QuoteBlockAction),
 		widget.NewToolbarAction(icons.CodeBlockIcon, actions.CodeBlockAction),
-		widget.NewToolbarAction(icons.InlineCodeBlockIcon, actions.InlineCodeBlockAction),
 		widget.NewToolbarAction(icons.PageBreakIcon, actions.PageBreakAction),
 		widget.NewToolbarAction(icons.UndoIcon, actions.UndoAction),
 		widget.NewToolbarAction(icons.RedoIcon, actions.RedoAction),
