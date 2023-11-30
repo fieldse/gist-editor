@@ -30,16 +30,20 @@ type ToolbarIcons struct {
 // loadIcon loads the data for a single icon file
 // Raises exception and exits on failure
 func loadIcon(filename string) ([]byte, error) {
-	var b []byte
+	buf := make([]byte, 10)
 	f, err := os.Open(path.Join(ICON_DIR, filename))
 	if err != nil {
-		return b, fmt.Errorf("failed to load icon file for %s - %w", filename, err)
+		return buf, fmt.Errorf("failed to load icon file for %s - %w", filename, err)
 	}
-	_, err = f.Read(b)
+	defer f.Close()
+	bytesRead, err := f.Read(buf)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to read icon data for %s", filename)
 	}
-	return b, nil
+	if bytesRead == 0 {
+		return []byte{}, fmt.Errorf("file data is empty for icon: %s", filename)
+	}
+	return buf, nil
 }
 
 // loadAllIcons loads and returns icon resources for all the Markdown editor buttons
