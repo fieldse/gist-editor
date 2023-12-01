@@ -34,15 +34,21 @@ func toLines(text string) []string {
 
 // replaceChunk replaces a chunk of a line of text, from the starting position
 func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
+	rowNum := sel.Row - 1 // character positions start at 1,1, not 0,0
 	toReplace := sel.Content
 	asLines := toLines(orig)
-	row := asLines[sel.Row]
+	row := asLines[rowNum]
+
+	// Split row into chunks
+	start := sel.Col - 1
+	end := start + len(toReplace)
 
 	// Sanity checks
 	// -- cursor column position shouldn't exceed length of the row
-	if sel.Col > len(orig)+1 {
+	if end > len(row) {
 		return "", fmt.Errorf("replace string failed: original cursor position exceeds content")
 	}
+
 	// -- cursor row position shouldn't exceed number of original rows
 	if sel.Row > len(asLines)+1 {
 		return "", fmt.Errorf("replace string failed: original cursor row exceeds content")
@@ -53,17 +59,16 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 		return "", fmt.Errorf("replace string failed: original does not contain substring %s", toReplace)
 	}
 
-	// Split into chunks
-	start := sel.Col - 1
-	end := start + len(toReplace)
-	pref := orig[0:start]  // start point is current cursor position
-	mid := orig[start:end] // this should equal our current selection
-	suffix := orig[end:]   // end point is start + N chars (length of substring)
+	pref := row[0:start]  // start point is current cursor position
+	mid := row[start:end] // this should equal our current selection
+	suffix := row[end:]   // end point is start + N chars (length of substring)
 
 	// Sanity checks: middle chunk should be the current selection
 	if mid != toReplace {
 		return "", fmt.Errorf("current selection does not match given substring: selection is  '%s', but got '%s'", toReplace, mid)
 	}
-	return pref + replaceWith + suffix, nil
+	newRow := pref + replaceWith + suffix
+	asLines[rowNum] = newRow
+	return strings.Join(asLines, "\n"), nil
 
 }
