@@ -24,17 +24,9 @@ type ToolbarIcons struct {
 	RedoIcon       fyne.Resource
 }
 
-// Load the asset data as a byte array, returning a Fyne resource
-func loadIconResource(filename string) (*fyne.StaticResource, error) {
-	data, ok := assets.IconMap[filename]
-	if !ok {
-		return &fyne.StaticResource{}, fmt.Errorf("failed to load icon data for %s", filename)
-	}
-	return fyne.NewStaticResource(filename, data), nil
-}
-
 // Load icon resources and returns a populated ToolbarIcons instance
 func (t ToolbarIcons) Load() (ToolbarIcons, error) {
+	// FIXME: find a way to avoid this ugly redundancy
 	h1Icon, err := loadIconResource("h1.png")
 	if err != nil {
 		return ToolbarIcons{}, err
@@ -98,4 +90,13 @@ func (t ToolbarIcons) Load() (ToolbarIcons, error) {
 		UndoIcon:       undoIcon,
 		RedoIcon:       redoIcon,
 	}, nil
+}
+
+// Load the asset data as a byte array, returning a Fyne resource
+func loadIconResource(filename string) (*fyne.StaticResource, error) {
+	data, ok := assets.IconMap[filename]
+	if !ok {
+		return &fyne.StaticResource{}, fmt.Errorf("failed to load icon data for %s", filename)
+	}
+	return fyne.NewStaticResource(filename, data), nil
 }
