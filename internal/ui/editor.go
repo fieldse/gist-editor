@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
+	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // Editor represents the Gist editor window, and provides methods
@@ -104,15 +105,12 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 	return content, editor, previewEditContainer
 }
 
-// PreviewEditContainer is the container wrapper for the Preview and Edit
-// panes. It alternately displays either the editor or editor with preview
-// in split view
+// PreviewEditContainer is the wrapper for the Preview and Edit panes.
+// It shows the editor on the left, with preview on the right in split view.
+// The toggle method hides the preview pane (moves to collapsed state).
 type PreviewEditContainer struct {
-	Content        *fyne.Container // contains both the preview and edit view
-	ToggleButton   *widget.Button  // the toggle Preview button
-	previewPane    *fyne.Container
-	editPane       *fyne.Container
-	PreviewVisible bool
+	Content      *container.Split // split view of the preview and edit panes
+	ToggleButton *widget.Button   // the toggle Preview button
 }
 
 // New returns a new PreviewEditContainer with toggle functionality
@@ -120,34 +118,41 @@ func (p PreviewEditContainer) New(
 	previewPane *fyne.Container,
 	editPane *fyne.Container,
 ) *PreviewEditContainer {
+
+	wrapper := container.NewHSplit(editPane, previewPane)
+
+	// The offset is the ratio between right and left panes, from 0-1.
+	// 	0.0 means right pane occupies 100% space, left pane collapsed.
+	// 	1.0 means left pane occupies 100% space, right pane collapsed.
+	wrapper.SetOffset(1.0)
 	pp := &PreviewEditContainer{
-		previewPane: previewPane,
-		editPane:    editPane,
-		Content:     container.NewStack(previewPane, editPane),
+		Content: wrapper,
 	}
 	pp.ToggleButton = widget.NewButton("Show preview", func() {
 		pp.TogglePreview()
 	})
-	// We don't show the preview pane by default
-	previewPane.Hide()
 
 	return pp
 }
 
-// TogglePreview toggles the visiblility of the markdown preview
+// PreviewIsVisible returns whether the markdown preview pane is visible,
+// determined by the offset attribute of the Split element.
+// If the user has adjusted it, it may be visible.
+func (p *PreviewEditContainer) PreviewIsVisible() bool {
+	return p.Content.Offset < 0.9 // Assume a sane default of >10% visibility means it's visible.
+}
+
+// TogglePreview toggles the visiblility of the markdown preview pane.
 func (p *PreviewEditContainer) TogglePreview() {
-	if p.PreviewVisible {
-		// do something
-		// hide the preview
-		p.previewPane.Hide()
-		p.editPane.Show()
+	logger.Debug("toggle preview visibility... current offset: %v", p.Content.Offset)
+	// The visiblility of the markdown preview pane is determined by the offset
+	// attribute of the Split element.
+	// If the user has adjusted it, it may be visible.
+	if p.PreviewIsVisible() {
+		p.Content.SetOffset(1.0) // hide the preview
 		p.ToggleButton.SetText("Show preview")
 	} else {
-		// do something else
-		// show the preview
-		p.previewPane.Show()
-		p.editPane.Hide()
+		p.Content.SetOffset(0.5) // show the preview and editor at 50/50 ratio
 		p.ToggleButton.SetText("Hide preview")
 	}
-	p.PreviewVisible = !p.PreviewVisible
 }
