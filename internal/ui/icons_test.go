@@ -22,8 +22,6 @@ func Test_iconPaths(t *testing.T) {
 }
 
 func Test_loadIcon(t *testing.T) {
-
-	// Confirm a few icons exist
 	for _, iconName := range exampleIconNames {
 		data, err := loadIcon(iconName)
 		assert.Nilf(t, err, "load icon file should succeed: %s", iconName)
