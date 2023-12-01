@@ -20,12 +20,12 @@ func replaceWithFoo(text string) string {
 
 // selectionToBold adds Markdown bold styling to the current text selection:
 // (ie: "foo" becomes "**foo**"")
-func selectionToBold(entireText string, selection TextSelection) (string, error) {
-	asLines := toLines(entireText)
-	currentLine := asLines[selection.Row-1] // confirm this exists
-	replaceWith := fmt.Sprintf("**%s**", selection.Content)
-	return replaceChunk(currentLine, selection, replaceWith)
-}
+// func selectionToBold(entireText string, selection TextSelection) (string, error) {
+// 	asLines := toLines(entireText)
+// 	currentLine := asLines[selection.Row-1] // confirm this exists
+// 	replaceWith := fmt.Sprintf("**%s**", selection.Content)
+// 	return replaceChunk(currentLine, selection, replaceWith)
+// }
 
 // toLines breaks the current text selection to lines
 func toLines(text string) []string {
@@ -33,29 +33,36 @@ func toLines(text string) []string {
 }
 
 // replaceChunk replaces a chunk of a line of text, from the starting position
-func replaceChunk(s string, sel TextSelection, replaceWith string) (string, error) {
+func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
+	toReplace := sel.Content
+	asLines := toLines(orig)
+	row := asLines[sel.Row]
 
 	// Sanity checks
-	// -- cursor position shouldn't be greater than the length or the original string
-	if sel.Col > len(s) {
-		return "", fmt.Errorf("replace string failed: original string length shorter than expected")
+	// -- cursor column position shouldn't exceed length of the row
+	if sel.Col > len(orig)+1 {
+		return "", fmt.Errorf("replace string failed: original cursor position exceeds content")
+	}
+	// -- cursor row position shouldn't exceed number of original rows
+	if sel.Row > len(asLines)+1 {
+		return "", fmt.Errorf("replace string failed: original cursor row exceeds content")
 	}
 
-	// -- original should contain the given string
-	if !strings.Contains(s, sel.Content) {
-		return "", fmt.Errorf("replace string failed: original does not contain substring %s", sel.Content)
+	// -- row should contain the given string
+	if !strings.Contains(row, toReplace) {
+		return "", fmt.Errorf("replace string failed: original does not contain substring %s", toReplace)
 	}
 
 	// Split into chunks
-	start := sel.Col
-	end := start + len(sel.Content)
-	pref := s[0:start]  // start point is current cursor position
-	mid := s[start:end] // this should equal our current selection
-	suffix := s[end:]   // end point is start + N chars (length of substring)
+	start := sel.Col - 1
+	end := start + len(toReplace)
+	pref := orig[0:start]  // start point is current cursor position
+	mid := orig[start:end] // this should equal our current selection
+	suffix := orig[end:]   // end point is start + N chars (length of substring)
 
-	// Sanity checks: original should contain the given string
-	if mid != sel.Content {
-		return "", fmt.Errorf("current selection does not match expected substring: selection  '%s', but got '%s'", sel.Content, mid)
+	// Sanity checks: middle chunk should be the current selection
+	if mid != toReplace {
+		return "", fmt.Errorf("current selection does not match given substring: selection is  '%s', but got '%s'", toReplace, mid)
 	}
 	return pref + replaceWith + suffix, nil
 
