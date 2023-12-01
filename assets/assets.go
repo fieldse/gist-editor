@@ -1,30 +1,51 @@
-// test loading static assets
+// Loads embedded icon assets
 package assets
 
 import (
 	"embed"
+	"fmt"
+	"path"
 )
 
-//go:embed test.txt
-var exampleText string
+// IconMap is a map of the icon filename to their data as byte slices
+var IconMap = make(map[string][]byte)
 
-//go:embed somedir/test.txt
-var nestedText string
+//go:embed icons
+var iconAssets embed.FS
 
-//go:embed somedir
-var subdirAssets embed.FS
-
-// loadStringAsset test loading a string asset directly from file content
-func loadStringAsset() string {
-	return exampleText
+var iconNames = []string{
+	"h1.png",
+	"h2.png",
+	"h3.png",
+	"bold.png",
+	"italic.png",
+	"link.png",
+	"image.png",
+	"quote-block.png",
+	"code-block.png",
+	"page-break.png",
+	"undo.png",
+	"redo.png",
 }
 
-// loadNestedStringAsset test loading a string asset directly from file content in a subdirectory
-func loadNestedStringAsset() string {
-	return nestedText
+// loadAsset loads an asset by name, storing it as a byte slice in the
+// package-level IconMap variable
+func loadAsset(iconName string) error {
+	data, err := iconAssets.ReadFile(path.Join("icons", iconName))
+	if err != nil {
+		return fmt.Errorf("failed to load icon %s: %v", iconName, err)
+	}
+	IconMap[iconName] = data
+	return nil
 }
 
-// loadFileAsset test loading a file asset using embed.FS
-func loadFileAsset() embed.FS {
-	return subdirAssets
+// preloadIcons preloads and embeds the icon assets, for use in the application toolbars
+func preloadIcons() error {
+	for _, iconName := range iconNames {
+		err := loadAsset(iconName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

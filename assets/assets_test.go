@@ -3,24 +3,25 @@ package assets
 import (
 	"testing"
 
+	"github.com/fieldse/gist-editor/internal/logger"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_stringAssets(t *testing.T) {
-	x := loadStringAsset()
-	expect := "Hello world!"
-	assert.Equalf(t, expect, x, "example text expected to equal %s", expect)
-}
-
-func Test_nestedAssets(t *testing.T) {
-	x := loadNestedStringAsset()
-	expect := "Hello world!"
-	assert.Equalf(t, expect, x, "example text expected to equal %s", expect)
-}
-
-func Test_loadFileAsset(t *testing.T) {
-	x := loadFileAsset()
-	content, err := x.ReadFile("somedir/test.txt")
-	assert.Nilf(t, err, "loadFileAsset failed")
+func Test_loadIconAsset(t *testing.T) {
+	x := iconAssets
+	content, err := x.ReadFile("icons/bold.png")
+	assert.Nilf(t, err, "load icon asset failed")
 	assert.NotEmptyf(t, content, "content should not be empty")
+	logger.Debug("icon content loaded: \n%v", content)
+}
+
+func Test_preloadIcons(t *testing.T) {
+	err := preloadIcons()
+	assert.Nil(t, err, "load icon asset failed")
+
+	for _, name := range iconNames {
+		content, ok := IconMap[name]
+		assert.Truef(t, ok, "%s should exist in IconMap", name)
+		assert.NotEmptyf(t, content, "content should not be empty")
+	}
 }
