@@ -62,7 +62,7 @@ func newToolbarActions() toolbarActions {
 // MarkdownToolbar returns toolbar component for the markdown text editor
 // Will throw error and exit program on failure
 func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
-	icons, err := loadAllIcons()
+	icons, err := ToolbarIcons{}.Load()
 	if err != nil {
 		logger.Error("load resources failed", err)
 		os.Exit(1)
