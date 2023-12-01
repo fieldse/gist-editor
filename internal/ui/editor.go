@@ -21,6 +21,27 @@ type Editor struct {
 	IsVisible            bool
 }
 
+// textSelection represents the position and content of the editor's current text selection
+type textSelection struct {
+	Col     int
+	Row     int
+	Content string
+}
+
+// GetSelection returns the current text selection and position
+func (e *Editor) GetSelection() textSelection {
+	return textSelection{
+		Col:     e.editor.CursorColumn,
+		Row:     e.editor.CursorRow,
+		Content: e.editor.SelectedText(),
+	}
+}
+
+// ReplaceSelection returns the current text selection and cursor position
+func (e *Editor) ReplaceSelection(orig textSelection, newText textSelection) {
+	// TODO: function to replace text selection by row & column
+}
+
 // Show displays the editor window
 func (e *Editor) Show() {
 	e.IsVisible = true
