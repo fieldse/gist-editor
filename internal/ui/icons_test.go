@@ -5,18 +5,21 @@ import (
 	"path"
 	"testing"
 
+	"github.com/fieldse/gist-editor/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 
 var exampleIconNames = []string{"bold.png", "italic.png", "quote-block.png", "undo.png", "h1.png"}
 
+var testIconDir = config.ICON_DIR
+
 func Test_iconPaths(t *testing.T) {
 	// Confirm the icon directory exists
-	assert.DirExistsf(t, ICON_DIR, "icon directory does not exist")
+	assert.DirExistsf(t, testIconDir, "icon directory does not exist")
 
 	// Confirm a few icons exist
 	for _, iconName := range exampleIconNames {
-		fp := path.Join(ICON_DIR, iconName)
+		fp := path.Join(testIconDir, iconName)
 		assert.FileExistsf(t, fp, "icon file does not exist: %s", iconName)
 	}
 }
