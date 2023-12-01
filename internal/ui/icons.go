@@ -7,9 +7,8 @@ import (
 	"path"
 
 	"fyne.io/fyne/v2"
+	"github.com/fieldse/gist-editor/internal/config"
 )
-
-var ICON_DIR = path.Join("..", "static", "icons")
 
 // ToolbarIcons is the set of icons for the Markdown editor toolbar
 type ToolbarIcons struct {
@@ -30,7 +29,7 @@ type ToolbarIcons struct {
 // loadIcon loads the data for a single icon file
 func loadIcon(filename string) ([]byte, error) {
 	buf := make([]byte, 10)
-	f, err := os.Open(path.Join(ICON_DIR, filename))
+	f, err := os.Open(path.Join(config.ICON_DIR, filename))
 	if err != nil {
 		return buf, fmt.Errorf("failed to load icon file for %s - %w", filename, err)
 	}
