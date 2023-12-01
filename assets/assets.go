@@ -5,6 +5,8 @@ import (
 	"embed"
 	"fmt"
 	"path"
+
+	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // IconMap is a map of the icon filename to their data as byte slices
@@ -12,7 +14,6 @@ var IconMap = make(map[string][]byte)
 
 //go:embed icons
 var iconAssets embed.FS
-
 var iconNames = []string{
 	"h1.png",
 	"h2.png",
@@ -26,6 +27,14 @@ var iconNames = []string{
 	"page-break.png",
 	"undo.png",
 	"redo.png",
+}
+
+// Preload all icon assets
+func init() {
+	err := preloadIcons()
+	if err != nil {
+		logger.Fatal("Failed to preload icons", err)
+	}
 }
 
 // loadAsset loads an asset by name, storing it as a byte slice in the
