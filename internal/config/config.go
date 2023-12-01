@@ -2,7 +2,6 @@
 package config
 
 import (
-	"os"
 	"path"
 	"path/filepath"
 
@@ -22,8 +21,7 @@ func init() {
 func projectRoot() string {
 	root, err := filepath.Abs(path.Join("..", ".."))
 	if err != nil {
-		logger.Error("failed to get project root", err)
-		os.Exit(1)
+		logger.Fatal("failed to get project root", err)
 	}
 	return root
 }
