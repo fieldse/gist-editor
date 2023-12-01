@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
-	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // Editor represents the Gist editor window, and provides methods
@@ -111,6 +110,7 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 type PreviewEditContainer struct {
 	Content      *container.Split // split view of the preview and edit panes
 	ToggleButton *widget.Button   // the toggle Preview button
+	previewPane  *fyne.Container
 }
 
 // New returns a new PreviewEditContainer with toggle functionality
@@ -126,8 +126,10 @@ func (p PreviewEditContainer) New(
 	// 	1.0 means left pane occupies 100% space, right pane collapsed.
 	wrapper.SetOffset(1.0)
 	pp := &PreviewEditContainer{
-		Content: wrapper,
+		Content:     wrapper,
+		previewPane: previewPane,
 	}
+	previewPane.Hide()
 	pp.ToggleButton = widget.NewButton("Show preview", func() {
 		pp.TogglePreview()
 	})
@@ -139,19 +141,20 @@ func (p PreviewEditContainer) New(
 // determined by the offset attribute of the Split element.
 // If the user has adjusted it, it may be visible.
 func (p *PreviewEditContainer) PreviewIsVisible() bool {
-	return p.Content.Offset < 0.9 // Assume a sane default of >10% visibility means it's visible.
+	return p.previewPane.Visible() && p.Content.Offset < 0.9 // Assume a sane default of >10% visibility means it's visible.
 }
 
 // TogglePreview toggles the visiblility of the markdown preview pane.
 func (p *PreviewEditContainer) TogglePreview() {
-	logger.Debug("toggle preview visibility... current offset: %v", p.Content.Offset)
 	// The visiblility of the markdown preview pane is determined by the offset
 	// attribute of the Split element.
 	// If the user has adjusted it, it may be visible.
 	if p.PreviewIsVisible() {
+		p.previewPane.Hide()
 		p.Content.SetOffset(1.0) // hide the preview
 		p.ToggleButton.SetText("Show preview")
 	} else {
+		p.previewPane.Show()
 		p.Content.SetOffset(0.5) // show the preview and editor at 50/50 ratio
 		p.ToggleButton.SetText("Hide preview")
 	}
