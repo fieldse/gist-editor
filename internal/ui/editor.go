@@ -21,16 +21,16 @@ type Editor struct {
 	IsVisible            bool
 }
 
-// textSelection represents the position and content of the editor's current text selection
-type textSelection struct {
+// TextSelection represents the position and content of the editor's current text selection
+type TextSelection struct {
 	Col     int
 	Row     int
 	Content string
 }
 
 // GetSelection returns the current text selection and position
-func (e *Editor) GetSelection() textSelection {
-	return textSelection{
+func (e *Editor) GetSelection() TextSelection {
+	return TextSelection{
 		Col:     e.editor.CursorColumn,
 		Row:     e.editor.CursorRow,
 		Content: e.editor.SelectedText(),
@@ -38,7 +38,7 @@ func (e *Editor) GetSelection() textSelection {
 }
 
 // ReplaceSelection returns the current text selection and cursor position
-func (e *Editor) ReplaceSelection(orig textSelection, newText textSelection) {
+func (e *Editor) ReplaceSelection(orig TextSelection, newText TextSelection) {
 	// TODO: function to replace text selection by row & column
 }
 
