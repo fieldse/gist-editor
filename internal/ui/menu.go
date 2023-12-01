@@ -3,7 +3,6 @@ package ui
 
 import (
 	"fyne.io/fyne/v2"
-	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // Returns a main File menu, and a function to toggle Save allowed
@@ -21,7 +20,6 @@ func FileMenu(cfg *AppConfig) (*fyne.MainMenu, func(bool)) {
 
 	// Function to toggle "Save" allowed on the File menu
 	setCanSave := func(b bool) {
-		logger.Debug("toggle canSave: %v", b)
 		saveMenu.Disabled = !b
 		saveAsMenu.Disabled = !b
 	}
