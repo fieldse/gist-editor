@@ -12,12 +12,16 @@ import (
 // Editor represents the Gist editor window, and provides methods
 // to update the title & content of the editor widget
 type Editor struct {
-	Title      string
-	Content    string
-	IsDirty    bool
-	editor     *widget.Entry // the text editor field
-	editWindow fyne.Window   // the editor window
-	IsVisible  bool
+	Title               string
+	Content             string
+	IsDirty             bool
+	editor              *widget.Entry   // the text editor field
+	editWindow          fyne.Window     // the editor window
+	previewPane         *fyne.Container // the editor as split-pane view with preview
+	singlePane          *fyne.Container // the editor as single-pane view
+	togglePreviewButton *widget.Button
+	IsVisible           bool
+	PreviewVisible      bool // is the preview pane visible, or are we in single pane view
 }
 
 // Show displays the editor window
@@ -30,6 +34,21 @@ func (e *Editor) Show() {
 func (e *Editor) Hide() {
 	e.IsVisible = false
 	e.editWindow.Hide()
+}
+
+// TogglePreview toggles visibility of the markdown preview pane
+func (e *Editor) TogglePreview() {
+	if !e.PreviewVisible { // Hide single-pane view, show split-pane
+		e.singlePane.Hide()
+		e.previewPane.Show()
+		e.togglePreviewButton.SetText("Hide Preview")
+		e.PreviewVisible = true
+	} else {
+		e.singlePane.Show() // Hide split-pane view, show single-pane
+		e.previewPane.Hide()
+		e.togglePreviewButton.SetText("Show Preview")
+		e.PreviewVisible = false
+	}
 }
 
 // SetContent sets the contents of the text editor field
@@ -50,27 +69,23 @@ func (e Editor) New(cfg *AppConfig) *Editor {
 	f := cfg.CurrentFile
 	w.Resize(fyne.NewSize(800, 600))
 
-	content, editor := editUI(cfg, f.Gist, w)
+	content, editor, previewPane, singlePane, togglePreviewButton := editUI(cfg, f.Gist, w)
 	w.SetContent(content)
 	w.CenterOnScreen()
 
 	return &Editor{
-		editor:     editor,
-		editWindow: w,
+		editor:              editor,
+		editWindow:          w,
+		previewPane:         previewPane,
+		singlePane:          singlePane,
+		togglePreviewButton: togglePreviewButton,
 	}
 }
 
 // Generates the UI for the edit window
-// Returns the container, and a pointer to the content editor
-func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry) {
-	spacer := layout.NewSpacer()
-	saveButton := widget.NewButton("Save", func() {
-		cfg.SaveFile()
-	})
-	closeButton := widget.NewButton("Close", func() {
-		cfg.CloseFile()
-		cfg.Editor.Hide()
-	})
+// Returns the container, and a pointer to the content editor, preview pane, and single-pane containers,
+// and the toggle preview button
+func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry, *fyne.Container, *fyne.Container, *widget.Button) {
 
 	// Title
 	titleBox := TitleBox(g.Filename)
@@ -94,10 +109,24 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 	// Split pane view
 	splitView := container.NewHSplit(editPane, previewPane)
 
+	// Single pane (no preview)
+	singlePane := container.NewCenter(editPane)
+
 	// Buttons
-	buttons := ButtonContainer(3, spacer, saveButton, closeButton)
+	spacer := layout.NewSpacer()
+	togglePreviewButton := widget.NewButton("Show preview", func() {
+		cfg.Editor.TogglePreview()
+	})
+	saveButton := widget.NewButton("Save", func() {
+		cfg.SaveFile()
+	})
+	closeButton := widget.NewButton("Close", func() {
+		cfg.CloseFile()
+		cfg.Editor.Hide()
+	})
+	buttons := ButtonContainer(4, spacer, togglePreviewButton, saveButton, closeButton)
 
 	// Wrapper container
 	content := container.NewBorder(titleBox, buttons, nil, nil, splitView)
-	return content, editor
+	return content, editor, previewPane, singlePane, togglePreviewButton
 }
