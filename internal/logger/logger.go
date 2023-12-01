@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 // Log info message to console
@@ -23,4 +24,10 @@ func Warn(msg string, a ...interface{}) {
 // Log error message to console
 func Error(msg string, err error) {
 	log.Printf("[error] %s - %s", msg, err.Error())
+}
+
+// Log fatal error to console, and exit program
+func Fatal(msg string, err error) {
+	log.Printf("[error -- fatal] %s - %s", msg, err.Error())
+	os.Exit(1)
 }

@@ -2,8 +2,6 @@
 package ui
 
 import (
-	"os"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/logger"
@@ -64,8 +62,7 @@ func newToolbarActions() toolbarActions {
 func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 	icons, err := ToolbarIcons{}.Load()
 	if err != nil {
-		logger.Error("load resources failed", err)
-		os.Exit(1)
+		logger.Fatal("load resources failed", err)
 	}
 	actions := newToolbarActions()
 
