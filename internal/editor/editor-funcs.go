@@ -23,6 +23,22 @@ func replaceWithFoo(text string) string {
 func selectionToBold(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("**%s**", selection.Content)
 	return replaceChunk(orig, selection, replaceWith)
+
+}
+
+// selectionToItalic adds Markdown italic styling to the current text selection:
+// (ie: "foo" becomes "_foo_"")
+func selectionToItalic(orig string, selection TextSelection) (string, error) {
+	replaceWith := fmt.Sprintf("_%s_", selection.Content)
+	return replaceChunk(orig, selection, replaceWith)
+
+}
+
+// selectionToStrikethrough adds Markdown strikethrough styling to the current text
+// selection: 	(ie: "foo" becomes "~~foo~~"")
+func selectionToStrikethrough(orig string, selection TextSelection) (string, error) {
+	replaceWith := fmt.Sprintf("~~%s~~", selection.Content)
+	return replaceChunk(orig, selection, replaceWith)
 }
 
 // getNthLine returns the Nth line of a piece of text, separated by newlines.

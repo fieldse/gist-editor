@@ -24,6 +24,20 @@ func Test_selectionToBold(t *testing.T) {
 	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
 }
 
+func Test_selectionToItalic(t *testing.T) {
+	r, err := selectionToItalic(exampleText, exampleSelection)
+	expect := "example line 1\nexample line 2\nexample _line_ 3\nexample line 4\nexample line 5"
+	assert.Nil(t, err)
+	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+}
+
+func Test_selectionToStrikethrough(t *testing.T) {
+	r, err := selectionToStrikethrough(exampleText, exampleSelection)
+	expect := "example line 1\nexample line 2\nexample ~~line~~ 3\nexample line 4\nexample line 5"
+	assert.Nil(t, err)
+	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+}
+
 func Test_toLines(t *testing.T) {
 	res := toLines(exampleText)
 	assert.Lenf(t, res, 5, "should be 5 lines")
