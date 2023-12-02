@@ -68,3 +68,27 @@ func Test_stripPrefixes(t *testing.T) {
 		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
 	}
 }
+
+func Test_rowToH1(t *testing.T) {
+	var cases = []struct {
+		s      string
+		expect string
+		sel    TextSelection
+	}{
+		{s: "line 1\nline 2\nfoo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n# foo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n## foo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n## foo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n### foo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n#### foo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n - foo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n - [ ] foo", expect: "line 1\nline 2\n# foo"},
+		{s: "line 1\nline 2\n----bar", expect: "line 1\nline 2\n# ----bar"},
+		{s: "line 1\nline 2\n#bar", expect: "line 1\nline 2\n# #bar"},
+	}
+	for _, x := range cases {
+		res, err := rowToH1(x.s, TextSelection{Col: 3, Row: 3, Content: "foo"})
+		assert.Nil(t, err)
+		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
+	}
+}

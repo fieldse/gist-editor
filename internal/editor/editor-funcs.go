@@ -52,8 +52,9 @@ func stripPrefixes(s string) string {
 	return s
 }
 
-// rowToH1 adds an H1 styling to the current row, replacing any existing '#' prefixes
-// (ie: "foo" becomes "# foo", "## foo" becomes "# foo"
+// rowToH1 adds an H1 styling to the current row, replacing any existing heading or list
+// styling
+// (ie: "foo", "## foo", and " - foo" all become "# foo"
 func rowToH1(orig string, selection TextSelection) (string, error) {
 	row, err := getNthLine(selection.Row, orig)
 	if err != nil {
