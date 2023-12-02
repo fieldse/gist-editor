@@ -20,26 +20,25 @@ func replaceWithFoo(text string) string {
 
 // selectionToBold adds Markdown bold styling to the current text selection:
 // (ie: "foo" becomes "**foo**"")
-// func selectionToBold(entireText string, selection TextSelection) (string, error) {
-// 	asLines := toLines(entireText)
-// 	currentLine := asLines[selection.Row-1] // confirm this exists
-// 	replaceWith := fmt.Sprintf("**%s**", selection.Content)
-// 	return replaceChunk(currentLine, selection, replaceWith)
-// }
+func selectionToBold(orig string, selection TextSelection) (string, error) {
+	replaceWith := fmt.Sprintf("**%s**", selection.Content)
+	return replaceChunk(orig, selection, replaceWith)
+}
 
 // toLines breaks the current text selection to lines
 func toLines(text string) []string {
 	return strings.Split(text, "\n")
 }
 
-// replaceChunk replaces a chunk of a line of text, from the starting position
+// replaceChunk replaces current selection in a piece of text with a given string
 func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
-	rowNum := sel.Row - 1 // character positions start at 1,1, not 0,0
-	toReplace := sel.Content
+	// Extract row to edit
 	asLines := toLines(orig)
+	rowNum := sel.Row - 1 // character positions start at 1,1, not 0,0
 	row := asLines[rowNum]
 
-	// Split row into chunks
+	// Get start and end character positions
+	toReplace := sel.Content
 	start := sel.Col - 1
 	end := start + len(toReplace)
 
@@ -67,6 +66,8 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	if mid != toReplace {
 		return "", fmt.Errorf("current selection does not match given substring: selection is  '%s', but got '%s'", toReplace, mid)
 	}
+
+	// Replace the row with the substituted version
 	newRow := pref + replaceWith + suffix
 	asLines[rowNum] = newRow
 	return strings.Join(asLines, "\n"), nil
