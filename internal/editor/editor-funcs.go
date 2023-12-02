@@ -25,6 +25,28 @@ func selectionToBold(orig string, selection TextSelection) (string, error) {
 	return replaceChunk(orig, selection, replaceWith)
 }
 
+// getNthLine returns the Nth line of a piece of text, separated by newlines.
+// (Note that lines start at 1, not zero)
+// Returns error if N exceeds number of lines.
+func getNthLine(n int, text string) (string, error) {
+	asLines := toLines(text)
+	if n > len(asLines) {
+		return "", fmt.Errorf("line number %d exceeds lines in text", n)
+	}
+	return asLines[n-1], nil
+}
+
+// replaceNthLine replaces the Nth line of a piece of text with a new string.
+// Returns error if N exceeds number of lines.
+func replaceNthLine(n int, text string, replaceWith string) (string, error) {
+	asLines := toLines(text)
+	if n > len(asLines) {
+		return "", fmt.Errorf("line number %d exceeds lines in text", n)
+	}
+	asLines[n-1] = replaceWith // row counts start at 1
+	return strings.Join(asLines, "\n"), nil
+}
+
 // toLines breaks the current text selection to lines
 func toLines(text string) []string {
 	return strings.Split(text, "\n")
@@ -33,9 +55,11 @@ func toLines(text string) []string {
 // replaceChunk replaces current selection in a piece of text with a given string
 func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
 	// Extract row to edit
-	asLines := toLines(orig)
-	rowNum := sel.Row - 1 // character positions start at 1,1, not 0,0
-	row := asLines[rowNum]
+	rowNum := sel.Row
+	row, err := getNthLine(rowNum, orig)
+	if err != nil {
+		return "", err
+	}
 
 	// Get start and end character positions
 	toReplace := sel.Content
@@ -47,12 +71,6 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	if end > len(row) {
 		return "", fmt.Errorf("replace string failed: original cursor position exceeds content")
 	}
-
-	// -- cursor row position shouldn't exceed number of original rows
-	if sel.Row > len(asLines)+1 {
-		return "", fmt.Errorf("replace string failed: original cursor row exceeds content")
-	}
-
 	// -- row should contain the given string
 	if !strings.Contains(row, toReplace) {
 		return "", fmt.Errorf("replace string failed: original does not contain substring %s", toReplace)
@@ -69,7 +87,6 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 
 	// Replace the row with the substituted version
 	newRow := pref + replaceWith + suffix
-	asLines[rowNum] = newRow
-	return strings.Join(asLines, "\n"), nil
+	return replaceNthLine(rowNum, orig, newRow)
 
 }
