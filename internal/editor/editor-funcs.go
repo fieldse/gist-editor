@@ -52,16 +52,49 @@ func stripPrefixes(s string) string {
 	return s
 }
 
-// rowToH1 adds an H1 styling to the current row, replacing any existing heading or list
-// styling
-// (ie: "foo", "## foo", and " - foo" all become "# foo"
-func rowToH1(orig string, selection TextSelection) (string, error) {
-	row, err := getNthLine(selection.Row, orig)
+// replaceRowPrefix adds a styling prefix to the current row, replacing any existing
+// heading or list styling
+// Examples:
+//
+//	(prefix: '#') 	strings "foo', "# foo", and " - foo" all become "# foo"
+//	(prefix: ' - ') strings "foo", "# foo", and " - foo" all become " - foo"
+func replaceRowPrefix(rowNumber int, orig string, newPrefix string) (string, error) {
+	row, err := getNthLine(rowNumber, orig)
 	if err != nil {
 		return "", err
 	}
-	newRow := "# " + stripPrefixes(row) // strip existing tags and append the new one
-	return replaceNthLine(selection.Row, orig, newRow)
+	newRow := newPrefix + stripPrefixes(row) // strip existing tags and append the new one
+	return replaceNthLine(rowNumber, orig, newRow)
+}
+
+// rowToH1 adds an H1 styling prefix to the current row, replacing any existing style
+func rowToH1(orig string, selection TextSelection) (string, error) {
+	return replaceRowPrefix(selection.Row, orig, "# ")
+}
+
+// rowToH2 adds an H2 styling prefix to the current row, replacing any existing style
+func rowToH2(orig string, selection TextSelection) (string, error) {
+	return replaceRowPrefix(selection.Row, orig, "## ")
+}
+
+// rowToH3 adds an H3 styling prefix to the current row, replacing any existing style
+func rowToH3(orig string, selection TextSelection) (string, error) {
+	return replaceRowPrefix(selection.Row, orig, "### ")
+}
+
+// rowToH4 adds an H4 styling prefix to the current row, replacing any existing style
+func rowToH4(orig string, selection TextSelection) (string, error) {
+	return replaceRowPrefix(selection.Row, orig, "### ")
+}
+
+// rowToUL adds an undordered list style to the current row, replacing any existing style
+func rowToUL(orig string, selection TextSelection) (string, error) {
+	return replaceRowPrefix(selection.Row, orig, " - ")
+}
+
+// rowToChecklistItem adds an checklist style prefix to the current row, replacing any existing style
+func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
+	return replaceRowPrefix(selection.Row, orig, " - [ ] ")
 }
 
 // getNthLine returns the Nth line of a piece of text, separated by newlines.
