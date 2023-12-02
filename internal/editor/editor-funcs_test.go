@@ -46,3 +46,25 @@ func Test_replaceChunk(t *testing.T) {
 	assert.Nilf(t, err, "replacechunk failed: %v", err)
 	assert.Equalf(t, expect, res, "result doesn't match expected: got '%s'", res)
 }
+
+func Test_stripPrefixes(t *testing.T) {
+	var cases = []struct {
+		s      string
+		expect string
+	}{
+		{s: "foo", expect: "foo"},
+		{s: "# foo", expect: "foo"},
+		{s: "## foo", expect: "foo"},
+		{s: "## foo", expect: "foo"},
+		{s: "### foo", expect: "foo"},
+		{s: "#### foo", expect: "foo"},
+		{s: " - foo", expect: "foo"},
+		{s: " - [ ] foo", expect: "foo"},
+		{s: "----bar", expect: "----bar"},
+		{s: "#bar", expect: "#bar"},
+	}
+	for _, x := range cases {
+		res := stripPrefixes(x.s)
+		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
+	}
+}

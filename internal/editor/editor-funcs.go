@@ -36,7 +36,11 @@ func selectionToStrikethrough(orig string, selection TextSelection) (string, err
 
 // These patterns will be assume as styling at the beginning of a row, and will be
 // replaced during replaceRowPrefix operations.
-var rowPrefixes = []string{"# ", "## ", "### ", "#### ", "##### ", " - ", " - [ ] "}
+var rowPrefixes = []string{
+	"# ", "## ", "### ", "#### ", "##### ", // headings
+	" - [ ] ", " - [x] ", "- [ ] ", "- [x] ", // checklists
+	" - ", // ul lists
+}
 
 // stripPrefixes strips common Markdown styling characters, such as h1, h2, bullets, checklist
 func stripPrefixes(s string) string {
