@@ -13,17 +13,11 @@ type TextSelection struct {
 	Content string
 }
 
-// replaceWithFoo replaces the entire text with "foo"
-func replaceWithFoo(text string) string {
-	return "foo"
-}
-
 // selectionToBold adds Markdown bold styling to the current text selection:
 // (ie: "foo" becomes "**foo**"")
 func selectionToBold(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("**%s**", selection.Content)
 	return replaceChunk(orig, selection, replaceWith)
-
 }
 
 // selectionToItalic adds Markdown italic styling to the current text selection:
@@ -31,7 +25,6 @@ func selectionToBold(orig string, selection TextSelection) (string, error) {
 func selectionToItalic(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("_%s_", selection.Content)
 	return replaceChunk(orig, selection, replaceWith)
-
 }
 
 // selectionToStrikethrough adds Markdown strikethrough styling to the current text
@@ -39,6 +32,31 @@ func selectionToItalic(orig string, selection TextSelection) (string, error) {
 func selectionToStrikethrough(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("~~%s~~", selection.Content)
 	return replaceChunk(orig, selection, replaceWith)
+}
+
+// These patterns will be assume as styling at the beginning of a row, and will be
+// replaced during replaceRowPrefix operations.
+var rowPrefixes = []string{"# ", "## ", "### ", "#### ", "##### ", " - ", " - [ ] "}
+
+// stripPrefixes strips common Markdown styling characters, such as h1, h2, bullets, checklist
+func stripPrefixes(s string) string {
+	for _, x := range rowPrefixes {
+		if strings.HasPrefix(s, x) {
+			return strings.TrimPrefix(s, x)
+		}
+	}
+	return s
+}
+
+// rowToH1 adds an H1 styling to the current row, replacing any existing '#' prefixes
+// (ie: "foo" becomes "# foo", "## foo" becomes "# foo"
+func rowToH1(orig string, selection TextSelection) (string, error) {
+	row, err := getNthLine(selection.Row, orig)
+	if err != nil {
+		return "", err
+	}
+	newRow := "# " + stripPrefixes(row) // strip existing tags and append the new one
+	return replaceNthLine(selection.Row, orig, newRow)
 }
 
 // getNthLine returns the Nth line of a piece of text, separated by newlines.

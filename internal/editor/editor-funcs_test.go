@@ -12,11 +12,6 @@ var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 
 // Text selection from the above example text -- the world "line" from line 3
 var exampleSelection = TextSelection{Row: 3, Col: 9, Content: "line"}
 
-func TestReplaceWithFoo(t *testing.T) {
-	new := replaceWithFoo("some text")
-	assert.Equalf(t, "foo", new, "should be replaced with 'foo'")
-}
-
 func Test_selectionToBold(t *testing.T) {
 	r, err := selectionToBold(exampleText, exampleSelection)
 	expect := "example line 1\nexample line 2\nexample **line** 3\nexample line 4\nexample line 5"
