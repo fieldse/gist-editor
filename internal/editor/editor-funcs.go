@@ -58,6 +58,7 @@ func stripPrefixes(s string) string {
 //
 //	(prefix: '#') 	strings "foo', "# foo", and " - foo" all become "# foo"
 //	(prefix: ' - ') strings "foo", "# foo", and " - foo" all become " - foo"
+//	(prefix: 'baz') strings "foo", "# foo", and " - foo" all become "bazfoo"
 func replaceRowPrefix(rowNumber int, orig string, newPrefix string) (string, error) {
 	row, err := getNthLine(rowNumber, orig)
 	if err != nil {
