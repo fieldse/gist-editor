@@ -4,6 +4,8 @@ package editorfunctions
 import (
 	"fmt"
 	"strings"
+
+	"github.com/fieldse/gist-editor/internal/logger"
 )
 
 // TextSelection represents the position and content of the editor's current text selection
@@ -11,6 +13,114 @@ type TextSelection struct {
 	Col     int
 	Row     int
 	Content string
+}
+
+// EditorFunctions is the set of Markdown syntax operations that can be performed
+// on the editor text content
+type EditorFunctions struct {
+	GetText      func() string        // get the editor's current text and cursor position
+	GetSelection func() TextSelection // get the editor's selected text and cursor position
+	ReplaceText  func(string)         // replace the content of the editor
+}
+
+func (e EditorFunctions) New(getText func() string, getSelection func() TextSelection, replaceText func(string)) *EditorFunctions {
+	return &EditorFunctions{
+		GetText:      getText,
+		GetSelection: getSelection,
+		ReplaceText:  replaceText,
+	}
+}
+
+// textOperation is any text manipulation operation against the editor text & selection
+type textOperation func(string, TextSelection) (string, error)
+
+// doTextOperation performs a text operation on the current text of the editor,
+// replacing its content with the result.
+func (e *EditorFunctions) doTextOperation(f textOperation) error {
+	origText := e.GetText()
+	selection := e.GetSelection()
+	newText, err := f(origText, selection)
+	if err != nil {
+		logger.Error("text operation failed", err)
+		return err
+	}
+	e.ReplaceText(newText)
+	return nil
+}
+
+// H1 styles the current selection as H1
+func (e *EditorFunctions) H1() {
+	e.doTextOperation(rowToH1)
+}
+
+// H2 styles the current selection as H2
+func (e *EditorFunctions) H2() {
+	e.doTextOperation(rowToH2)
+}
+
+// H3 styles the current selection as H3
+func (e *EditorFunctions) H3() {
+	e.doTextOperation(rowToH3)
+}
+
+// H4 styles the current selection as H4
+func (e *EditorFunctions) H4() {
+	e.doTextOperation(rowToH4)
+}
+
+// Bold styles the current selection as Bold
+func (e *EditorFunctions) Bold() {
+	e.doTextOperation(selectionToBold)
+}
+
+// Italic styles the current selection as Italic
+func (e *EditorFunctions) Italic() {
+	e.doTextOperation(selectionToItalic)
+}
+
+// Stikethrough styles the current selection as Stikethrough
+func (e *EditorFunctions) Stikethrough() {
+	e.doTextOperation(selectionToStrikethrough)
+}
+
+// Link styles the current selection as a link
+func (e *EditorFunctions) Link() {
+	e.doTextOperation(selectionToStrikethrough)
+}
+
+// UL styles the current row as unordered list item
+func (e *EditorFunctions) UL() {
+	e.doTextOperation(rowToUL)
+}
+
+// OL styles the current row as ordered list item
+func (e *EditorFunctions) OL() {
+	// TODO
+}
+
+// Checklist styles the current row as a checklist item
+func (e *EditorFunctions) Checklist() {
+	e.doTextOperation(rowToChecklistItem)
+}
+
+// Image uploads and inserts an image at the current location
+func (e *EditorFunctions) Image() {
+	// TODO
+}
+
+// QuoteBlock styles the current selection as a quote block
+func (e *EditorFunctions) QuoteBlock() {
+	// TODO
+}
+
+// CodeBlock styles the current selection as a code block
+func (e *EditorFunctions) CodeBlock() {
+	// TODO
+}
+
+// PageBreak inserts a page break at the current position
+func (e *EditorFunctions) PageBreak() {
+	// TODO
 }
 
 // selectionToBold adds Markdown bold styling to the current text selection:

@@ -6,8 +6,11 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	editorfunctions "github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/github"
 )
+
+type TextSelection = editorfunctions.TextSelection
 
 // Editor represents the Gist editor window, and provides methods
 // to update the title & content of the editor widget
@@ -21,13 +24,6 @@ type Editor struct {
 	IsVisible            bool
 }
 
-// TextSelection represents the position and content of the editor's current text selection
-type TextSelection struct {
-	Col     int
-	Row     int
-	Content string
-}
-
 // GetSelection returns the current text selection and position
 func (e *Editor) GetSelection() TextSelection {
 	return TextSelection{
@@ -35,11 +31,6 @@ func (e *Editor) GetSelection() TextSelection {
 		Row:     e.editor.CursorRow,
 		Content: e.editor.SelectedText(),
 	}
-}
-
-// ReplaceSelection returns the current text selection and cursor position
-func (e *Editor) ReplaceSelection(orig TextSelection, newText TextSelection) {
-	// TODO: function to replace text selection by row & column
 }
 
 // Show displays the editor window
@@ -63,6 +54,16 @@ func (e *Editor) SetContent(text string) {
 func (e *Editor) Clear() {
 	e.Title = "Edit"
 	e.editor.SetText("")
+}
+
+// Undo performs an undo operation on the text editor content
+func (e *Editor) Undo() {
+	// TODO
+}
+
+// Redo performs an redo operation on the text editor content
+func (e *Editor) Redo() {
+	// TODO
 }
 
 // New creates a new Editor window and text editor widget
