@@ -146,10 +146,13 @@ func selectionToStrikethrough(orig string, selection TextSelection) (string, err
 
 // These patterns will be assume as styling at the beginning of a row, and will be
 // replaced during replaceRowPrefix operations.
+// FIXME: replace this simplistic pattern check with regex
 var rowPrefixes = []string{
 	"# ", "## ", "### ", "#### ", "##### ", // headings
 	" - [ ] ", " - [x] ", "- [ ] ", "- [x] ", // checklists
-	" - ", // ul lists
+	"- ", " - ", // ul lists
+	// TODO: add in regex for ordered lists
+	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ",
 }
 
 // stripPrefixes strips common Markdown styling characters, such as h1, h2, bullets, checklist
@@ -170,12 +173,12 @@ func stripPrefixes(s string) string {
 //	(prefix: ' - ') strings "foo", "# foo", and " - foo" all become " - foo"
 //	(prefix: 'baz') strings "foo", "# foo", and " - foo" all become "bazfoo"
 func replaceRowPrefix(rowNumber int, orig string, newPrefix string) (string, error) {
-	row, err := getNthLine(rowNumber, orig)
+	row, err := getNthLine(rowNumber+1, orig)
 	if err != nil {
 		return "", err
 	}
 	newRow := newPrefix + stripPrefixes(row) // strip existing tags and append the new one
-	return replaceNthLine(rowNumber, orig, newRow)
+	return replaceNthLine(rowNumber+1, orig, newRow)
 }
 
 // rowToH1 adds an H1 styling prefix to the current row, replacing any existing style
@@ -209,7 +212,7 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 }
 
 // getNthLine returns the Nth line of a piece of text, separated by newlines.
-// (Note that lines start at 1, not zero)
+// Important note: line count starts at 1, not at zero!
 // Returns error if N exceeds number of lines.
 func getNthLine(n int, text string) (string, error) {
 	asLines := toLines(text)
@@ -220,6 +223,7 @@ func getNthLine(n int, text string) (string, error) {
 }
 
 // replaceNthLine replaces the Nth line of a piece of text with a new string.
+// (Note that lines start at 1, not zero!)
 // Returns error if N exceeds number of lines.
 func replaceNthLine(n int, text string, replaceWith string) (string, error) {
 	asLines := toLines(text)

@@ -40,6 +40,20 @@ func Test_toLines(t *testing.T) {
 	assert.Equalf(t, res[4], "example line 5", "line text should match expected: got %s", res[4])
 }
 
+func Test_getNthLine(t *testing.T) {
+	res, err := getNthLine(1, exampleText)
+	assert.Nilf(t, err, "getNthLine failed: %v", err)
+	assert.Equalf(t, "example line 1", res, "line text should match expected: got %s", res)
+
+	res, err = getNthLine(5, exampleText)
+	assert.Nilf(t, err, "getNthLine failed: %v", err)
+	assert.Equalf(t, "example line 5", res, "line text should match expected: got %s", res)
+
+	// Over line count should return an error
+	_, err = getNthLine(6, exampleText)
+	assert.NotNilf(t, err, "getNthLine should fail on outside of line range")
+}
+
 func Test_replaceChunk(t *testing.T) {
 	expect := "example line 1\nexample line 2\nexample crazy chars 3\nexample line 4\nexample line 5"
 	res, err := replaceChunk(exampleText, exampleSelection, "crazy chars")
@@ -58,6 +72,7 @@ func Test_stripPrefixes(t *testing.T) {
 		{s: "## foo", expect: "foo"},
 		{s: "### foo", expect: "foo"},
 		{s: "#### foo", expect: "foo"},
+		{s: "- foo", expect: "foo"},
 		{s: " - foo", expect: "foo"},
 		{s: " - [ ] foo", expect: "foo"},
 		{s: "----bar", expect: "----bar"},

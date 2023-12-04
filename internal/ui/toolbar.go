@@ -27,7 +27,7 @@ func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 
 	// Edit text functions we have to pass to the toolbar
 	getText := func() string {
-		return a.Editor.Content
+		return a.Editor.Content()
 	}
 	getSelection := func() TextSelection {
 		return a.Editor.GetSelection()

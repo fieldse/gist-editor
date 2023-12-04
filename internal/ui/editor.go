@@ -16,7 +16,6 @@ type TextSelection = editorfunctions.TextSelection
 // to update the title & content of the editor widget
 type Editor struct {
 	Title                string
-	Content              string
 	IsDirty              bool
 	editor               *widget.Entry         // the text editor field
 	editWindow           fyne.Window           // the editor window
@@ -43,6 +42,11 @@ func (e *Editor) Show() {
 func (e *Editor) Hide() {
 	e.IsVisible = false
 	e.editWindow.Hide()
+}
+
+// GetContent returns the text contents of the
+func (e *Editor) Content() string {
+	return e.editor.Text
 }
 
 // SetContent sets the contents of the text editor field
