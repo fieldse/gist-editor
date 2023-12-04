@@ -23,11 +23,13 @@ type Editor struct {
 	IsVisible            bool
 }
 
-// GetSelection returns the current text selection and position
+// GetSelection returns the current text selection and position.
+// Cursor position starts from 1,1, unline Fyne which counts from 0,0
+// This is to make more natural-reading of "Row" and "Column" values.
 func (e *Editor) GetSelection() TextSelection {
 	return TextSelection{
-		Col:     e.editor.CursorColumn,
-		Row:     e.editor.CursorRow,
+		Col:     e.editor.CursorColumn + 1,
+		Row:     e.editor.CursorRow + 1,
 		Content: e.editor.SelectedText(),
 	}
 }

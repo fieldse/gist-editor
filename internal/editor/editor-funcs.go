@@ -10,8 +10,8 @@ import (
 
 // TextSelection represents the position and content of the editor's current text selection
 type TextSelection struct {
-	Col     int
-	Row     int
+	Col     int // cursor X position, starting from 1
+	Row     int // cursor Y position, starting from 1
 	Content string
 }
 
@@ -21,14 +21,6 @@ type EditorFunctions struct {
 	GetText      func() string        // get the editor's current text and cursor position
 	GetSelection func() TextSelection // get the editor's selected text and cursor position
 	ReplaceText  func(string)         // replace the content of the editor
-}
-
-func (e EditorFunctions) New(getText func() string, getSelection func() TextSelection, replaceText func(string)) *EditorFunctions {
-	return &EditorFunctions{
-		GetText:      getText,
-		GetSelection: getSelection,
-		ReplaceText:  replaceText,
-	}
 }
 
 // textOperation is any text manipulation operation against the editor text & selection
@@ -151,8 +143,7 @@ var rowPrefixes = []string{
 	"# ", "## ", "### ", "#### ", "##### ", // headings
 	" - [ ] ", " - [x] ", "- [ ] ", "- [x] ", // checklists
 	"- ", " - ", // ul lists
-	// TODO: add in regex for ordered lists
-	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ",
+	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ", // ordered lists
 }
 
 // stripPrefixes strips common Markdown styling characters, such as h1, h2, bullets, checklist
@@ -166,19 +157,23 @@ func stripPrefixes(s string) string {
 }
 
 // replaceRowPrefix adds a styling prefix to the current row, replacing any existing
-// heading or list styling
+// heading or list styling.
+//
+//	rowNumber  	the cursor row position, as returned from the editor. Counts from 1)
+//	orig 		the original editor contents
+//
 // Examples:
 //
 //	(prefix: '#') 	strings "foo', "# foo", and " - foo" all become "# foo"
 //	(prefix: ' - ') strings "foo", "# foo", and " - foo" all become " - foo"
 //	(prefix: 'baz') strings "foo", "# foo", and " - foo" all become "bazfoo"
 func replaceRowPrefix(rowNumber int, orig string, newPrefix string) (string, error) {
-	row, err := getNthLine(rowNumber+1, orig)
+	row, err := getNthLine(rowNumber, orig)
 	if err != nil {
 		return "", err
 	}
 	newRow := newPrefix + stripPrefixes(row) // strip existing tags and append the new one
-	return replaceNthLine(rowNumber+1, orig, newRow)
+	return replaceNthLine(rowNumber, orig, newRow)
 }
 
 // rowToH1 adds an H1 styling prefix to the current row, replacing any existing style
@@ -212,7 +207,7 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 }
 
 // getNthLine returns the Nth line of a piece of text, separated by newlines.
-// Important note: line count starts at 1, not at zero!
+// Line count starts at 1, not at zero.
 // Returns error if N exceeds number of lines.
 func getNthLine(n int, text string) (string, error) {
 	asLines := toLines(text)
@@ -223,7 +218,7 @@ func getNthLine(n int, text string) (string, error) {
 }
 
 // replaceNthLine replaces the Nth line of a piece of text with a new string.
-// (Note that lines start at 1, not zero!)
+// Line count starts at 1, not at zero.
 // Returns error if N exceeds number of lines.
 func replaceNthLine(n int, text string, replaceWith string) (string, error) {
 	asLines := toLines(text)
@@ -249,9 +244,11 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	}
 
 	// Get start and end character positions
-	toReplace := sel.Content
-	start := sel.Col - 1
-	end := start + len(toReplace)
+	selected := sel.Content
+	// If there is a selection, the cursor position is at the end.
+	// So, we count backwards to find the start position
+	end := sel.Col - 1           // Cursor position, zero based
+	start := end - len(selected) // Counting backwards to find the start of the selection
 
 	// Sanity checks
 	// -- cursor column position shouldn't exceed length of the row
@@ -259,17 +256,17 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 		return "", fmt.Errorf("replace string failed: original cursor position exceeds content")
 	}
 	// -- row should contain the given string
-	if !strings.Contains(row, toReplace) {
-		return "", fmt.Errorf("replace string failed: original does not contain substring %s", toReplace)
+	if !strings.Contains(row, selected) {
+		return "", fmt.Errorf("replace string failed: original does not contain substring %s", selected)
 	}
 
-	pref := row[0:start]  // start point is current cursor position
+	pref := row[0:start]  // the chunk before the selection
 	mid := row[start:end] // this should equal our current selection
-	suffix := row[end:]   // end point is start + N chars (length of substring)
+	suffix := row[end:]   // the chunk after the selection
 
 	// Sanity checks: middle chunk should be the current selection
-	if mid != toReplace {
-		return "", fmt.Errorf("current selection does not match given substring: selection is  '%s', but got '%s'", toReplace, mid)
+	if mid != selected {
+		return "", fmt.Errorf("current selection does not match given substring: selection is  '%s', but got '%s'", selected, mid)
 	}
 
 	// Replace the row with the substituted version

@@ -32,7 +32,7 @@ func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 	getSelection := func() TextSelection {
 		return a.Editor.GetSelection()
 	}
-	replaceSelection := func(s string) {
+	replaceText := func(s string) {
 		a.Editor.SetContent(s)
 	}
 	undoFunc := func() {
@@ -42,7 +42,11 @@ func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 		a.Editor.Redo()
 	}
 
-	actions := editorfunctions.EditorFunctions{}.New(getText, getSelection, replaceSelection)
+	actions := editorfunctions.EditorFunctions{
+		GetText:      getText,
+		GetSelection: getSelection,
+		ReplaceText:  replaceText,
+	}
 
 	// Menu items
 	return widget.NewToolbar(
