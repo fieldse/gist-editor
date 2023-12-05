@@ -10,24 +10,24 @@ import (
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
 
 // Text selection from the above example text -- the world "line" from line 3
-var exampleSelection = TextSelection{Row: 3, Col: 9, Content: "line"}
+var selectionLineThreeWordTwo = TextSelection{Row: 3, Col: 9, Content: "line"}
 
 func Test_selectionToBold(t *testing.T) {
-	r, err := selectionToBold(exampleText, exampleSelection)
+	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample **line** 3\nexample line 4\nexample line 5"
 	assert.Nil(t, err)
 	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
 }
 
 func Test_selectionToItalic(t *testing.T) {
-	r, err := selectionToItalic(exampleText, exampleSelection)
+	r, err := selectionToItalic(exampleText, selectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample _line_ 3\nexample line 4\nexample line 5"
 	assert.Nil(t, err)
 	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
 }
 
 func Test_selectionToStrikethrough(t *testing.T) {
-	r, err := selectionToStrikethrough(exampleText, exampleSelection)
+	r, err := selectionToStrikethrough(exampleText, selectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample ~~line~~ 3\nexample line 4\nexample line 5"
 	assert.Nil(t, err)
 	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
@@ -40,23 +40,23 @@ func Test_toLines(t *testing.T) {
 	assert.Equalf(t, res[4], "example line 5", "line text should match expected: got %s", res[4])
 }
 
-func Test_getNthLine(t *testing.T) {
-	res, err := getNthLine(1, exampleText)
+func Test_getSelectedRows(t *testing.T) {
+	rows, err := getSelectedRows(exampleText, selectionLineThreeWordTwo)
 	assert.Nilf(t, err, "getNthLine failed: %v", err)
-	assert.Equalf(t, "example line 1", res, "line text should match expected: got %s", res)
+	assert.Equalf(t, "example line 1", rows, "line text should match expected: got %s", rows)
 
-	res, err = getNthLine(5, exampleText)
+	rows, err = getSelectedRows(exampleText, selectionLineThreeWordTwo)
 	assert.Nilf(t, err, "getNthLine failed: %v", err)
-	assert.Equalf(t, "example line 5", res, "line text should match expected: got %s", res)
+	assert.Equalf(t, "example line 5", rows, "line text should match expected: got %s", rows)
 
 	// Over line count should return an error
-	_, err = getNthLine(6, exampleText)
+	_, err = getSelectedRows(exampleText, selectionLineThreeWordTwo)
 	assert.NotNilf(t, err, "getNthLine should fail on outside of line range")
 }
 
 func Test_replaceChunk(t *testing.T) {
 	expect := "example line 1\nexample line 2\nexample crazy chars 3\nexample line 4\nexample line 5"
-	res, err := replaceChunk(exampleText, exampleSelection, "crazy chars")
+	res, err := replaceChunk(exampleText, selectionLineThreeWordTwo, "crazy chars")
 	assert.Nilf(t, err, "replacechunk failed: %v", err)
 	assert.Equalf(t, expect, res, "result doesn't match expected: got '%s'", res)
 }

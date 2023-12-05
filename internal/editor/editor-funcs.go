@@ -167,54 +167,66 @@ func stripPrefixes(s string) string {
 //	(prefix: '#') 	strings "foo', "# foo", and " - foo" all become "# foo"
 //	(prefix: ' - ') strings "foo", "# foo", and " - foo" all become " - foo"
 //	(prefix: 'baz') strings "foo", "# foo", and " - foo" all become "bazfoo"
-func replaceRowPrefix(rowNumber int, orig string, newPrefix string) (string, error) {
-	row, err := getNthLine(rowNumber, orig)
+func replaceRowPrefix(sel TextSelection, orig string, newPrefix string) (string, error) {
+	var newRows []string
+	rows, err := getSelectedRows(orig, sel)
 	if err != nil {
 		return "", err
 	}
-	newRow := newPrefix + stripPrefixes(row) // strip existing tags and append the new one
-	return replaceNthLine(rowNumber, orig, newRow)
+	for _, row := range rows {
+		rowNum := 0                              // FIXME -- get row number
+		newRow := newPrefix + stripPrefixes(row) // strip existing tags and append the new one
+		replaceNthLine(rowNum, orig, newRow)
+	}
+	return strings.Join(newRows, "\n"), nil
 }
 
 // rowToH1 adds an H1 styling prefix to the current row, replacing any existing style
 func rowToH1(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection.Row, orig, "# ")
+	return replaceRowPrefix(selection, orig, "# ")
 }
 
 // rowToH2 adds an H2 styling prefix to the current row, replacing any existing style
 func rowToH2(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection.Row, orig, "## ")
+	return replaceRowPrefix(selection, orig, "## ")
 }
 
 // rowToH3 adds an H3 styling prefix to the current row, replacing any existing style
 func rowToH3(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection.Row, orig, "### ")
+	return replaceRowPrefix(selection, orig, "### ")
 }
 
 // rowToH4 adds an H4 styling prefix to the current row, replacing any existing style
 func rowToH4(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection.Row, orig, "### ")
+	return replaceRowPrefix(selection, orig, "### ")
 }
 
 // rowToUL adds an undordered list style to the current row, replacing any existing style
 func rowToUL(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection.Row, orig, " - ")
+	return replaceRowPrefix(selection, orig, " - ")
 }
 
 // rowToChecklistItem adds an checklist style prefix to the current row, replacing any existing style
 func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection.Row, orig, " - [ ] ")
+	return replaceRowPrefix(selection, orig, " - [ ] ")
 }
 
-// getNthLine returns the Nth line of a piece of text, separated by newlines.
-// Line count starts at 1, not at zero.
-// Returns error if N exceeds number of lines.
-func getNthLine(n int, text string) (string, error) {
+// getSelectedRows returns the row(s) of a text selection, separated by newlines.
+func getSelectedRows(text string, sel TextSelection) ([]string, error) {
+	var rows []string
+
 	asLines := toLines(text)
-	if n > len(asLines) {
-		return "", fmt.Errorf("line number %d exceeds lines in text", n)
+	rowPosition := sel.Row
+
+	// If the selection goes backwards more than the current line,
+	// have a multi-line selection
+	numlines := strings.Count(sel.Content, "\n")
+	for i := 0; i < numlines; i++ { // iterate backwards for N lines
+		currentRow := asLines[rowPosition-1]
+		rows = append([]string{currentRow}, rows...)
+		rowPosition = rowPosition - 1 //
 	}
-	return asLines[n-1], nil
+	return rows, nil
 }
 
 // replaceNthLine replaces the Nth line of a piece of text with a new string.
@@ -238,10 +250,16 @@ func toLines(text string) []string {
 func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
 	// Extract row to edit
 	rowNum := sel.Row
-	row, err := getNthLine(rowNum, orig)
+	rows, err := getSelectedRows(orig, sel)
 	if err != nil {
 		return "", err
 	}
+
+	// FIXME -- handle multiple rows
+	if len(rows) > 0 {
+		return "", fmt.Errorf("fixme: replaceChunk needs to handle multiple rows")
+	}
+	row := rows[0]
 
 	// Get start and end character positions
 	selected := sel.Content
