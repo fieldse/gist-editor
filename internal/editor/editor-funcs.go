@@ -256,7 +256,7 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	}
 
 	// FIXME -- handle multiple rows
-	if len(rows) > 0 {
+	if len(rows) != 1 {
 		return "", fmt.Errorf("fixme: replaceChunk needs to handle multiple rows")
 	}
 	row := rows[0]

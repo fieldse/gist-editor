@@ -9,8 +9,14 @@ import (
 
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
 
-// Text selection from the above example text -- the world "line" from line 3
+// Text selection from the above example text -- the word "line" from line 3
 var selectionLineThreeWordTwo = TextSelection{Row: 3, Col: 9, Content: "line"}
+
+// Text selection from the above example text -- from beginning of line 1 to end of line 2
+var multiLineSelectionLines1and2 = TextSelection{Row: 2, Col: 15, Content: "example line 1\nexample line 2"}
+
+// Multiline selection from the above example text -- from "line" in line 2 to "example" in line 3
+var multiLineSelectionLines2and3 = TextSelection{Row: 3, Col: 8, Content: "line 2\nexample"}
 
 func Test_selectionToBold(t *testing.T) {
 	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
@@ -41,17 +47,36 @@ func Test_toLines(t *testing.T) {
 }
 
 func Test_getSelectedRows(t *testing.T) {
-	rows, err := getSelectedRows(exampleText, selectionLineThreeWordTwo)
-	assert.Nilf(t, err, "getNthLine failed: %v", err)
-	assert.Equalf(t, "example line 1", rows, "line text should match expected: got %s", rows)
+	// Example 1 - single line, line 3, partial text
+	sel := selectionLineThreeWordTwo
+	rows, err := getSelectedRows(exampleText, sel)
+	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
+	assert.Equalf(t, 1, len(rows), "selection 1 should be a single row")
+	assert.Equalf(t, "example line 3", rows[0], "line text should match expected: got %s", rows)
 
-	rows, err = getSelectedRows(exampleText, selectionLineThreeWordTwo)
-	assert.Nilf(t, err, "getNthLine failed: %v", err)
-	assert.Equalf(t, "example line 5", rows, "line text should match expected: got %s", rows)
+	// Example 2 - Lines 1-2, full text
+	sel = multiLineSelectionLines1and2
+	rows, err = getSelectedRows(exampleText, sel)
+	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
+	assert.Equalf(t, 2, len(rows), "selection should be two rows")
+
+	// Rows should contain selected text
+	assert.Containsf(t, "example line 1", rows[0], "row should contain expected text: got %s", rows[0])
+	assert.Containsf(t, "example line 2", rows[1], "row should contain expected text: got %s", rows[1])
+
+	// Example 3 - Lines 2-3, partial text
+	sel = multiLineSelectionLines2and3
+	rows, err = getSelectedRows(exampleText, sel)
+	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
+	assert.Equalf(t, 2, len(rows), "selection should be two rows")
+	// Rows should contain selected text
+
+	assert.Containsf(t, "example line 1", rows[0], "row should contain expected text: got %s", rows[0])
+	assert.Containsf(t, "example line 2", rows[1], "row should contain expected text: got %s", rows[1])
 
 	// Over line count should return an error
 	_, err = getSelectedRows(exampleText, selectionLineThreeWordTwo)
-	assert.NotNilf(t, err, "getNthLine should fail on outside of line range")
+	assert.NotNilf(t, err, "getSelectedRows should fail on outside of line range")
 }
 
 func Test_replaceChunk(t *testing.T) {
