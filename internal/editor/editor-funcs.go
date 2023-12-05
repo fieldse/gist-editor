@@ -40,6 +40,18 @@ func (e *EditorFunctions) doTextOperation(f textOperation) error {
 	return nil
 }
 
+// Debug current text selection
+func (e *EditorFunctions) DebugTextSelection() {
+	t := e.GetText()
+	sel := e.GetSelection()
+	currentRows, _ := getSelectedRows(t, sel)
+	logger.Debug("cursor position: %d,%d", sel.Row, sel.Col)
+	logger.Debug("selection content: '%s'", sel.Content)
+	logger.Debug("selection length: %d", len(sel.Content))
+	logger.Debug("length of selected rows: %+v", currentRows)
+	logger.Debug("result of getSelectedRows: %+v", currentRows)
+}
+
 // H1 styles the current selection as H1
 func (e *EditorFunctions) H1() {
 	e.doTextOperation(rowToH1)
@@ -216,15 +228,27 @@ func getSelectedRows(text string, sel TextSelection) ([]string, error) {
 	var rows []string
 
 	asLines := toLines(text)
-	rowPosition := sel.Row
 
 	// If the selection goes backwards more than the current line,
 	// have a multi-line selection
-	numlines := strings.Count(sel.Content, "\n")
-	for i := 0; i < numlines; i++ { // iterate backwards for N lines
-		currentRow := asLines[rowPosition-1]
-		rows = append([]string{currentRow}, rows...)
-		rowPosition = rowPosition - 1 //
+	numlines := strings.Count(sel.Content, "\n") + 1
+
+	// FIXME: this selection could be either forwards or backwards.
+	var isForwards bool = true
+
+	// Iterate (forward/backward) for N lines
+	j := sel.Row - 1 // index of the current row in the lines array
+	for i := 0; i < numlines; i++ {
+		currentRow := asLines[j]
+		if isForwards {
+			// If user has selected forwards, the cursor is at the end of the selection. Therefore move backwards by line.
+			rows = append([]string{currentRow}, rows...)
+			j = j - 1
+		} else { // If cursor selection is going backwards, the cursor is at the start of the selection.
+			// Therefore we move forwards by line
+			rows = append(rows, currentRow)
+			j = j + 1
+		}
 	}
 	return rows, nil
 }

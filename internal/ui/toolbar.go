@@ -3,6 +3,7 @@ package ui
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	editorfunctions "github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/logger"
@@ -50,6 +51,7 @@ func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 
 	// Menu items
 	return widget.NewToolbar(
+		widget.NewToolbarAction(theme.BrokenImageIcon(), actions.DebugTextSelection),
 		widget.NewToolbarAction(icons.H1Icon, actions.H1),
 		widget.NewToolbarAction(icons.H2Icon, actions.H2),
 		widget.NewToolbarAction(icons.H3Icon, actions.H3),

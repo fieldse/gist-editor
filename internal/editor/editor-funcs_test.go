@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
@@ -51,14 +52,15 @@ func Test_getSelectedRows(t *testing.T) {
 	sel := selectionLineThreeWordTwo
 	rows, err := getSelectedRows(exampleText, sel)
 	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
-	assert.Equalf(t, 1, len(rows), "selection 1 should be a single row")
+	require.Equalf(t, 1, len(rows), "selection 1 should be a single row")
+	assert.Containsf(t, rows[0], sel.Content, "line should contain content: got %s", rows[0])
 	assert.Equalf(t, "example line 3", rows[0], "line text should match expected: got %s", rows)
 
 	// Example 2 - Lines 1-2, full text
 	sel = multiLineSelectionLines1and2
 	rows, err = getSelectedRows(exampleText, sel)
 	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
-	assert.Equalf(t, 2, len(rows), "selection should be two rows")
+	require.Equalf(t, 2, len(rows), "selection should be two rows")
 
 	// Rows should contain selected text
 	assert.Containsf(t, "example line 1", rows[0], "row should contain expected text: got %s", rows[0])
@@ -68,7 +70,7 @@ func Test_getSelectedRows(t *testing.T) {
 	sel = multiLineSelectionLines2and3
 	rows, err = getSelectedRows(exampleText, sel)
 	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
-	assert.Equalf(t, 2, len(rows), "selection should be two rows")
+	require.Equalf(t, 2, len(rows), "selection should be two rows")
 	// Rows should contain selected text
 
 	assert.Containsf(t, "example line 1", rows[0], "row should contain expected text: got %s", rows[0])

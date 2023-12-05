@@ -82,7 +82,8 @@ func (cfg *AppConfig) Exit() {
 // NewFile opens a new empty markdown editor
 func (cfg *AppConfig) NewFile() {
 	cfg.MainWindow.SetCanSave(true)
-	g := github.Gist{}.New("New Gist.md", "Enter your content here...")
+	// g := github.Gist{}.New("New Gist.md", "Enter your content here...")
+	g := github.Gist{}.New("New Gist.md", "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5") // fixme: replace
 	cfg.CurrentFile = &GistFile{
 		isLocal:  true,
 		isOpen:   true,
