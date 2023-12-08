@@ -123,13 +123,13 @@ func (cfg *AppConfig) CloseFile() {
 	cfg.Editor.Hide()
 }
 
-// ReadConfig reads and stores the config settings from the config file
-func (cfg *AppConfig) ReadConfig() error {
+// LoadConfig reads and stores the config settings from the config file
+func (cfg *AppConfig) LoadConfig() error {
 	return cfg.GithubSettingsWindow.Load(cfg)
 }
 
 func StartUI() {
 	cfg.MakeUI()
-	cfg.ReadConfig()
+	cfg.LoadConfig()
 	cfg.RunUI()
 }

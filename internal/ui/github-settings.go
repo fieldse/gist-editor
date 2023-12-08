@@ -36,15 +36,20 @@ func (g GithubSettingsWindow) New(cfg *AppConfig) *GithubSettingsWindow {
 }
 
 // Load reads the github setting from file, and stores to the app config.
-func (g *GithubSettingsWindow) Load(cfg *AppConfig) {
+func (g *GithubSettingsWindow) Load(cfg *AppConfig) error {
 	token, err := ReadGithubToken()
 	if err != nil {
 		logger.Error("load Github settings failed", err)
-		return
+		return err
 	}
-	logger.Info("github settings loaded from %s", GITHUB_CONFIG_FILE)
+	if token == "" {
+		logger.Info("no github token found")
+		return nil
+	}
+	logger.Info("github token loaded from %s", GITHUB_CONFIG_FILE)
 	g.tokenField.SetText(token) // update the UI placeholder
 	cfg.GithubConfig.GithubAPIToken = token
+	return nil
 }
 
 // Show shows the Github settings modal
@@ -98,6 +103,7 @@ func githubSettingsUI(cfg *AppConfig) (*dialog.FormDialog, *widget.Entry) {
 // ReadGithubToken reads and returns the Github API token, if it exists.
 func ReadGithubToken() (string, error) {
 	if !fileExists(GITHUB_CONFIG_FILE) {
+		logger.Info("load github settings: no file found.")
 		return "", nil
 	}
 	token, err := readToken()

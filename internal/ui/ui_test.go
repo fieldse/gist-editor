@@ -22,6 +22,6 @@ func Test_ReadConfig(t *testing.T) {
 	// TODO  -- add test for loading app config
 	a := AppConfig{}.New()
 	a.MakeUI()
-	res := a.ReadConfig()
+	res := a.LoadConfig()
 	assert.Nil(t, res, "read config should succeed")
 }
