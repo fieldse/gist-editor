@@ -13,7 +13,6 @@ type AppConfig struct {
 	MainWindow           MainWindow
 	ListWindow           *ListView
 	Editor               *Editor
-	RunUI                func()
 	CurrentFile          *GistFile
 	GithubConfig         *github.GithubConfig
 	GithubSettingsWindow *GithubSettingsWindow
@@ -53,9 +52,11 @@ func (cfg *AppConfig) MakeUI() {
 
 	// Create Github token modal
 	cfg.GithubSettingsWindow = GithubSettingsWindow{}.New(cfg)
+}
 
-	// Store the show window functions
-	cfg.RunUI = cfg.MainWindow.ShowAndRun
+// RunUI starts the application
+func (cfg *AppConfig) RunUI() {
+	cfg.MainWindow.ShowAndRun()
 }
 
 // Show the All Gists list view
@@ -123,8 +124,8 @@ func (cfg *AppConfig) CloseFile() {
 }
 
 // ReadConfig reads and stores the config settings from the config file
-func (cfg *AppConfig) ReadConfig() {
-	cfg.GithubSettingsWindow.Load(cfg)
+func (cfg *AppConfig) ReadConfig() error {
+	return cfg.GithubSettingsWindow.Load(cfg)
 }
 
 func StartUI() {
