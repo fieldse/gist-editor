@@ -24,4 +24,5 @@ func Test_ReadConfig(t *testing.T) {
 	a.MakeUI()
 	res := a.LoadConfig()
 	assert.Nil(t, res, "read config should succeed")
+
 }

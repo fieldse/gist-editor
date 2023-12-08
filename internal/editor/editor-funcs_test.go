@@ -134,3 +134,25 @@ func Test_rowToH1(t *testing.T) {
 		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
 	}
 }
+
+func Test_getSelectionRange(t *testing.T) {
+	// TODO: make test cases here
+	var cases = []struct {
+		s         TextSelection
+		expect    string
+		shouldErr bool
+	}{
+		// FIXME: make test cases here
+		{s: TextSelection{Col: 0, Row: 0, Content: "foo"}, expect: "foo", shouldErr: false},
+	}
+	for _, x := range cases {
+		// TODO
+		res, err := getSelectionRange(exampleText, x.s, false)
+		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
+		if x.shouldErr {
+			assert.NotNil(t, err, "should error")
+		} else {
+			assert.NotNil(t, err, "should not error")
+		}
+	}
+}

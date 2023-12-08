@@ -48,7 +48,7 @@ func (e *EditorFunctions) DebugTextSelection() {
 	logger.Debug("cursor position: %d,%d", sel.Row, sel.Col)
 	logger.Debug("selection content: '%s'", sel.Content)
 	logger.Debug("selection length: %d", len(sel.Content))
-	logger.Debug("length of selected rows: %+v", currentRows)
+	logger.Debug("total selected rows: %+v", len(currentRows))
 	logger.Debug("result of getSelectedRows: %+v", currentRows)
 }
 
@@ -221,6 +221,36 @@ func rowToUL(orig string, selection TextSelection) (string, error) {
 // rowToChecklistItem adds an checklist style prefix to the current row, replacing any existing style
 func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 	return replaceRowPrefix(selection, orig, " - [ ] ")
+}
+
+// getSelectionRange returns the preceding or trailing N characters from a text,
+// relative to the position of the cursor.
+
+// Parameters:
+//
+//	text    	the original text
+//	sel     	the selection and cursor position
+//	reverse		move backward in the selection from the cursor
+func getSelectionRange(text string, sel TextSelection, reverse bool) (string, error) {
+	asLines := toLines(text)
+	var charIndex int = sel.Col // start at the column character number
+	for r := 0; r < sel.Row; r++ {
+		// Add row lengths until we have reached the last row
+		if sel.Row != r {
+			charIndex = charIndex + len(asLines[r]) + 1 // we add a character for the newline character
+		}
+	}
+	// we should now have the absolute index of the selection cursor, vis a vis the original text
+	// If it's in reverse order, return the slice from the cursor
+	if reverse {
+		startChar := charIndex + len(sel.Content)
+		// TODO: error check here for string length
+		return text[startChar:charIndex], nil
+	}
+	// Otherwise, count forward from the cursor
+	endChar := charIndex + len(sel.Content)
+	// TODO: error check here for string length
+	return text[charIndex:endChar], nil
 }
 
 // getSelectedRows returns the row(s) of a text selection, separated by newlines.
