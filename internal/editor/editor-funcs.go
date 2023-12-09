@@ -49,16 +49,7 @@ func (e *EditorFunctions) doTextOperation(f textOperation) error {
 
 // Debug current text selection
 func (e *EditorFunctions) DebugTextSelection() {
-	t := e.getContent()
-	sel := e.getSelection()
-	selectionStart := e.selectionStart()
-	currentRows, _ := getSelectedRows(t, sel)
-	logger.Debug("cursor position: %d,%d", sel.Position.Row, sel.Position.Col)
-	logger.Debug("selection content: '%s'", sel.Content)
-	logger.Debug("selection start: %+v", selectionStart)
-	logger.Debug("selection length: %d", len(sel.Content))
-	logger.Debug("total selected rows: %+v", len(currentRows))
-	logger.Debug("result of getSelectedRows: %+v", currentRows)
+	logger.Debug("content: %s", e.getContent())
 }
 
 // H1 styles the current selection as H1

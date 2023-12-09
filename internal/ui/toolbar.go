@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	editorfunctions "github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/logger"
+	"github.com/fieldse/gist-editor/internal/shared"
 )
 
 // MarkdownToolbar represents a toolbar for the markdown text editor
@@ -25,17 +26,27 @@ func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 	if err != nil {
 		logger.Fatal("load resources failed", err)
 	}
-
-	// Undo/redo functions to pass to the toolbar
+	// Text editing functions to pass to the toolbar
+	getText := func() string {
+		return a.Editor.Content()
+	}
+	setText := func(s string) {
+		a.Editor.SetContent(s)
+	}
+	getSelection := func() shared.TextSelection {
+		return a.Editor.GetSelection()
+	}
+	selectionStart := func() shared.Position {
+		return a.Editor.SelectionStart()
+	}
 	undoFunc := func() {
 		a.Editor.Undo()
 	}
 	redoFunc := func() {
 		a.Editor.Redo()
 	}
+	actions := editorfunctions.NewEditorFunctions(getText, setText, getSelection, selectionStart)
 
-	ed := a.Editor
-	actions := editorfunctions.NewEditorFunctions(ed.Content, ed.SetContent, ed.GetSelection, ed.SelectionStart)
 	// Menu items
 	return widget.NewToolbar(
 		widget.NewToolbarAction(theme.BrokenImageIcon(), actions.DebugTextSelection),
