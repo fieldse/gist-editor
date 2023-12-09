@@ -6,12 +6,9 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	editorfunctions "github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/github"
+	"github.com/fieldse/gist-editor/internal/shared"
 )
-
-type TextSelection = editorfunctions.TextSelection
-type Position = editorfunctions.Position
 
 // Editor represents the Gist editor window, and provides methods
 // to update the title & content of the editor widget
@@ -27,16 +24,11 @@ type Editor struct {
 // GetSelection returns the current text selection and position.
 // Cursor position starts from 1,1, to match standard editors.
 // (the Fyne entry widget counts position from 0,0)
-func (e *Editor) GetSelection() TextSelection {
+func (e *Editor) GetSelection() shared.TextSelection {
 	row := e.editor.CursorRow + 1
 	col := e.editor.CursorColumn + 1
-	return TextSelection{
-		Position: Position{
-			Row: row,
-			Col: col,
-		},
-		Content: e.editor.SelectedText(),
-	}
+	content := e.editor.SelectedText()
+	return shared.NewTextSelection(content, row, col)
 }
 
 // Show displays the editor window
