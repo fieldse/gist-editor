@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
 	"github.com/fieldse/gist-editor/internal/shared"
+	"github.com/fieldse/gist-editor/internal/widgets"
 )
 
 // Editor represents the Gist editor window, and provides methods
@@ -15,9 +16,9 @@ import (
 type Editor struct {
 	Title                string
 	IsDirty              bool
-	editor               *widget.Entry         // the text editor field
-	editWindow           fyne.Window           // the editor window
-	previewEditContainer *PreviewEditContainer // a wrapper, containing the preview and edit widgets
+	editor               *widgets.MultiLineWidget // the text editor field
+	editWindow           fyne.Window              // the editor window
+	previewEditContainer *PreviewEditContainer    // a wrapper, containing the preview and edit widgets
 	IsVisible            bool
 }
 
@@ -89,7 +90,7 @@ func (e Editor) New(cfg *AppConfig) *Editor {
 
 // Generates the UI for the edit window
 // Returns the container, and a pointer to the content editor, and a wrapper for the single-pane and split-pane containers,
-func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widget.Entry, *PreviewEditContainer) {
+func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widgets.MultiLineWidget, *PreviewEditContainer) {
 
 	// Title
 	titleBox := TitleBox(g.Filename)
@@ -97,9 +98,8 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 	// Text editor toolbar
 	textEditorToolbar := MarkdownToolbarUI(cfg)
 
-	// Editor input
-	editor := widget.NewMultiLineEntry()
-	editor.SetText(g.Content)
+	// Editor entry widget -- this is a custom widget that extends fyne's widget.Entry
+	editor := widgets.NewMultilineWidget(g.Content)
 
 	// Top section -- edit toolbar & title
 	topBox := container.NewVBox(widget.NewLabel("Edit"), textEditorToolbar)
