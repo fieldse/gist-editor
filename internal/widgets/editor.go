@@ -15,7 +15,7 @@ func NewMultilineWidget(content string) *MultiLineWidget {
 	e.ExtendBaseWidget(e)
 	e.SetText(content)
 	e.MultiLine = true
-	e.Wrapping = fyne.TextTruncate
+	e.Wrapping = fyne.TextWrap(fyne.TextTruncateClip)
 	return e
 }
 

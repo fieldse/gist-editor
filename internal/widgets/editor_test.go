@@ -8,13 +8,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewMultilineWidget(t *testing.T) {
+// Return a test MultiLineWidget fixture
+func newTestMultiLine() *MultiLineWidget {
 	a := app.New()
 	w := a.NewWindow("test window")
-
 	e := NewMultilineWidget("foo\nbar\nbaz\nbuz")
 	w.SetContent(e) // required to run tests against a fyne widget
+	return e
+}
+
+func TestNewMultilineWidget(t *testing.T) {
+	e := newTestMultiLine()
 	assert.Equal(t, "foo\nbar\nbaz\nbuz", e.Text, "test should match expected")
+}
+
+func Test_cursorPosition(t *testing.T) {
+	e := newTestMultiLine()
 
 	// Get cursor position
 	curRow, curCol := e.CursorColumn, e.CursorRow
