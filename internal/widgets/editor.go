@@ -28,7 +28,7 @@ type MultiLineWidget struct {
 // Returns -1,-1 if there is no selection
 func (m *MultiLineWidget) SelectionStart() shared.Position {
 	var row = reflect.ValueOf(m).Elem().FieldByName("selectRow").Int()
-	var col = reflect.ValueOf(m).Elem().FieldByName("selectCol").Int()
+	var col = reflect.ValueOf(m).Elem().FieldByName("selectColumn").Int()
 	return shared.Position{
 		Row: int(row),
 		Col: int(col),
