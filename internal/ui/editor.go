@@ -11,6 +11,7 @@ import (
 )
 
 type TextSelection = editorfunctions.TextSelection
+type Position = editorfunctions.Position
 
 // Editor represents the Gist editor window, and provides methods
 // to update the title & content of the editor widget
@@ -24,12 +25,16 @@ type Editor struct {
 }
 
 // GetSelection returns the current text selection and position.
-// Cursor position starts from 1,1, unline Fyne which counts from 0,0
-// This is to make more natural-reading of "Row" and "Column" values.
+// Cursor position starts from 1,1, to match standard editors.
+// (the Fyne entry widget counts position from 0,0)
 func (e *Editor) GetSelection() TextSelection {
+	row := e.editor.CursorRow + 1
+	col := e.editor.CursorColumn + 1
 	return TextSelection{
-		Col:     e.editor.CursorColumn + 1,
-		Row:     e.editor.CursorRow + 1,
+		Position: Position{
+			Row: row,
+			Col: col,
+		},
 		Content: e.editor.SelectedText(),
 	}
 }

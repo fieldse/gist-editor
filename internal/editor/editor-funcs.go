@@ -10,9 +10,21 @@ import (
 
 // TextSelection represents the position and content of the editor's current text selection
 type TextSelection struct {
-	Col     int // cursor X position, starting from 1
-	Row     int // cursor Y position, starting from 1
-	Content string
+	Position Position // cursor position, using rows and columns
+	Content  string
+}
+
+// TODO -- this might be useful for clarifying the exact position of the character selection
+type AbsoluteCharacterRange struct {
+	Start int
+	End   int
+}
+
+// Position represents a cursor position in a multi-row selection.
+// Both row and column values start from 1
+type Position struct {
+	Col int
+	Row int
 }
 
 // EditorFunctions is the set of Markdown syntax operations that can be performed
@@ -45,7 +57,7 @@ func (e *EditorFunctions) DebugTextSelection() {
 	t := e.GetText()
 	sel := e.GetSelection()
 	currentRows, _ := getSelectedRows(t, sel)
-	logger.Debug("cursor position: %d,%d", sel.Row, sel.Col)
+	logger.Debug("cursor position: %d,%d", sel.Position.Row, sel.Position.Col)
 	logger.Debug("selection content: '%s'", sel.Content)
 	logger.Debug("selection length: %d", len(sel.Content))
 	logger.Debug("total selected rows: %+v", len(currentRows))
@@ -231,16 +243,20 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 //	sel     	the selection and cursor position
 //	reverse		move backward in the selection from the cursor
 func getSelectionRange(text string, sel TextSelection, reverse bool) (string, error) {
+	// Cursor position
+	rowNum := sel.Position.Row
+	colNum := sel.Position.Col
+
 	asLines := toLines(text)
 	// Get absolute position of the cursor relative to the original string
 	// start at the column character number
-	var charIndex int = sel.Col - 1
-	if sel.Row > len(asLines)+1 {
-		return "", fmt.Errorf("selection row %d out of range", sel.Row)
+	var charIndex int = colNum - 1
+	if rowNum > len(asLines)+1 {
+		return "", fmt.Errorf("selection row %d out of range", rowNum)
 	}
-	for r := 0; r < sel.Row; r++ {
+	for r := 0; r < rowNum; r++ {
 		// Add row lengths until we have reached the last row
-		if sel.Row != r {
+		if rowNum != r {
 			charIndex = charIndex + len(asLines[r]) + 1 // we add a character for the newline character
 		}
 	}
@@ -254,7 +270,6 @@ func getSelectionRange(text string, sel TextSelection, reverse bool) (string, er
 		endChar = charIndex + len(sel.Content)
 
 	}
-	logger.Debug("returning characters from %d to %d", startChar, endChar)
 	if endChar > len(text) {
 		return "", fmt.Errorf("selection exceeds text length: character %d, text length is %d", endChar, len(text))
 	}
@@ -275,7 +290,7 @@ func getSelectedRows(text string, sel TextSelection) ([]string, error) {
 	var isForwards bool = true
 
 	// Iterate (forward/backward) for N lines
-	j := sel.Row - 1 // index of the current row in the lines array
+	j := sel.Position.Row - 1 // index of the current row in the lines array
 	for i := 0; i < numlines; i++ {
 		currentRow := asLines[j]
 		if isForwards {
@@ -311,7 +326,7 @@ func toLines(text string) []string {
 // replaceChunk replaces current selection in a piece of text with a given string
 func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
 	// Extract row to edit
-	rowNum := sel.Row
+	rowNum := sel.Position.Row
 	rows, err := getSelectedRows(orig, sel)
 	if err != nil {
 		return "", err
@@ -327,7 +342,7 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	selected := sel.Content
 	// If there is a selection, the cursor position is at the end.
 	// So, we count backwards to find the start position
-	end := sel.Col - 1           // Cursor position, zero based
+	end := sel.Position.Col - 1  // Cursor position, zero based
 	start := end - len(selected) // Counting backwards to find the start of the selection
 
 	// Sanity checks
@@ -352,5 +367,4 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	// Replace the row with the substituted version
 	newRow := pref + replaceWith + suffix
 	return replaceNthLine(rowNum, orig, newRow)
-
 }
