@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	editorfunctions "github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/logger"
+	"github.com/fieldse/gist-editor/internal/shared"
 )
 
 // MarkdownToolbar represents a toolbar for the markdown text editor
@@ -30,7 +31,7 @@ func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
 	getText := func() string {
 		return a.Editor.Content()
 	}
-	getSelection := func() TextSelection {
+	getSelection := func() shared.TextSelection {
 		return a.Editor.GetSelection()
 	}
 	replaceText := func(s string) {
