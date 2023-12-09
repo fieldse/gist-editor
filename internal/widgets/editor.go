@@ -3,6 +3,7 @@ package widgets
 
 import (
 	"reflect"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
@@ -33,4 +34,14 @@ func (m *MultiLineWidget) SelectionStart() shared.Position {
 		Row: int(row),
 		Col: int(col),
 	}
+}
+
+// ContentRows returns the content of the widget, broken into rows by newline
+func (m *MultiLineWidget) ContentRows() []string {
+	return strings.Split(m.Text, "\n")
+}
+
+// RowCount returns the number of rows in the text content
+func (m *MultiLineWidget) RowCount() int {
+	return strings.Count(m.Text, "\n")
 }
