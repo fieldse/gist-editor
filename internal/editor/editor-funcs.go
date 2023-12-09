@@ -235,6 +235,9 @@ func getSelectionRange(text string, sel TextSelection, reverse bool) (string, er
 	// Get absolute position of the cursor relative to the original string
 	// start at the column character number
 	var charIndex int = sel.Col - 1
+	if sel.Row > len(asLines)+1 {
+		return "", fmt.Errorf("selection row %d out of range", sel.Row)
+	}
 	for r := 0; r < sel.Row; r++ {
 		// Add row lengths until we have reached the last row
 		if sel.Row != r {
