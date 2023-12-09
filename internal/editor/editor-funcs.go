@@ -225,7 +225,6 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 
 // getSelectionRange returns the preceding or trailing N characters from a text,
 // relative to the position of the cursor.
-
 // Parameters:
 //
 //	text    	the original text
@@ -233,24 +232,30 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 //	reverse		move backward in the selection from the cursor
 func getSelectionRange(text string, sel TextSelection, reverse bool) (string, error) {
 	asLines := toLines(text)
-	var charIndex int = sel.Col // start at the column character number
+	// Get absolute position of the cursor relative to the original string
+	// start at the column character number
+	var charIndex int = sel.Col - 1
 	for r := 0; r < sel.Row; r++ {
 		// Add row lengths until we have reached the last row
 		if sel.Row != r {
 			charIndex = charIndex + len(asLines[r]) + 1 // we add a character for the newline character
 		}
 	}
-	// we should now have the absolute index of the selection cursor, vis a vis the original text
-	// If it's in reverse order, return the slice from the cursor
-	if reverse {
-		startChar := charIndex + len(sel.Content)
-		// TODO: error check here for string length
-		return text[startChar:charIndex], nil
+	// we should now have the absolute index of the selection cursor, relative to the original text
+	var startChar, endChar int
+	if reverse { // If it's in reverse order, the starting position precedes the cursor by some characters
+		startChar = charIndex - len(sel.Content)
+		endChar = charIndex
+	} else { // Otherwise, the selection end follows the cursor
+		startChar = charIndex
+		endChar = charIndex + len(sel.Content)
+
 	}
-	// Otherwise, count forward from the cursor
-	endChar := charIndex + len(sel.Content)
-	// TODO: error check here for string length
-	return text[charIndex:endChar], nil
+	logger.Debug("returning characters from %d to %d", startChar, endChar)
+	if endChar > len(text) {
+		return "", fmt.Errorf("selection exceeds text length: character %d, text length is %d", endChar, len(text))
+	}
+	return text[startChar:endChar], nil
 }
 
 // getSelectedRows returns the row(s) of a text selection, separated by newlines.

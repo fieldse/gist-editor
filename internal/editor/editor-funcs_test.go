@@ -2,6 +2,7 @@
 package editorfunctions
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -138,21 +139,31 @@ func Test_rowToH1(t *testing.T) {
 func Test_getSelectionRange(t *testing.T) {
 	// TODO: make test cases here
 	var cases = []struct {
-		s         TextSelection
-		expect    string
-		shouldErr bool
+		sel         TextSelection
+		reverse     bool
+		expect      string
+		shouldErr   bool // should the function return an error : ie, string out of bounds
+		shouldMatch bool // should the match expected result
 	}{
-		// FIXME: make test cases here
-		{s: TextSelection{Col: 0, Row: 0, Content: "foo"}, expect: "foo", shouldErr: false},
+		{sel: selectionLineThreeWordTwo, reverse: false, expect: "line", shouldErr: false, shouldMatch: true},
+		{sel: selectionLineThreeWordTwo, reverse: false, expect: "foo", shouldErr: false, shouldMatch: false}, // different word, should not match
+		{sel: selectionLineThreeWordTwo, reverse: true, expect: "line", shouldErr: false, shouldMatch: false}, // in reverse, should return the wrong string
 	}
-	for _, x := range cases {
-		// TODO
-		res, err := getSelectionRange(exampleText, x.s, false)
-		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
+	fmt.Printf("==== ORIGINAL TEXT: \n'%s'\n", exampleText)
+	for i, x := range cases {
+		fmt.Printf("==== TEST CASE [%d/%d] ==== : %+v\n", i+1, len(cases), x)
+		res, err := getSelectionRange(exampleText, x.sel, x.reverse)
+		fmt.Printf("=== [debug] got result: '%+v'\n", res)
+
 		if x.shouldErr {
-			assert.NotNil(t, err, "should error")
+			assert.NotNil(t, err, "should return error: got %v", err)
 		} else {
-			assert.NotNil(t, err, "should not error")
+			assert.Nilf(t, err, "should not return error: got %v", err)
+		}
+		if x.shouldMatch {
+			assert.Equalf(t, x.expect, res, "expected '%s', got '%s'", x.expect, res)
+		} else {
+			assert.NotEqual(t, x.expect, res, "should not get '%s', but got '%s'", x.expect, res)
 		}
 	}
 }
