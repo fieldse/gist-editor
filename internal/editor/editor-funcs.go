@@ -9,16 +9,25 @@ import (
 	"github.com/fieldse/gist-editor/internal/shared"
 )
 
-// TextSelection represents the position and content of the editor's current text selection
 type TextSelection = shared.TextSelection
 type Position = shared.Position
 
 // EditorFunctions is the set of Markdown syntax operations that can be performed
 // on the editor text content
 type EditorFunctions struct {
-	GetText      func() string        // get the editor's current text and cursor position
-	GetSelection func() TextSelection // get the editor's selected text and cursor position
-	ReplaceText  func(string)         // replace the content of the editor
+	getContent     func() string
+	setContent     func(string)
+	getSelection   func() shared.TextSelection
+	selectionStart func() shared.Position
+}
+
+func NewEditorFunctions(getContent func() string, setContent func(string), getSelection func() shared.TextSelection, selectionStart func() shared.Position) *EditorFunctions {
+	return &EditorFunctions{
+		getContent:     getContent,
+		setContent:     setContent,
+		getSelection:   getSelection,
+		selectionStart: selectionStart,
+	}
 }
 
 // textOperation is any text manipulation operation against the editor text & selection
@@ -27,24 +36,26 @@ type textOperation func(string, TextSelection) (string, error)
 // doTextOperation performs a text operation on the current text of the editor,
 // replacing its content with the result.
 func (e *EditorFunctions) doTextOperation(f textOperation) error {
-	origText := e.GetText()
-	selection := e.GetSelection()
+	origText := e.getContent()
+	selection := e.getSelection()
 	newText, err := f(origText, selection)
 	if err != nil {
 		logger.Error("text operation failed", err)
 		return err
 	}
-	e.ReplaceText(newText)
+	e.setContent(newText)
 	return nil
 }
 
 // Debug current text selection
 func (e *EditorFunctions) DebugTextSelection() {
-	t := e.GetText()
-	sel := e.GetSelection()
+	t := e.getContent()
+	sel := e.getSelection()
+	selectionStart := e.selectionStart()
 	currentRows, _ := getSelectedRows(t, sel)
 	logger.Debug("cursor position: %d,%d", sel.Position.Row, sel.Position.Col)
 	logger.Debug("selection content: '%s'", sel.Content)
+	logger.Debug("selection start: %+v", selectionStart)
 	logger.Debug("selection length: %d", len(sel.Content))
 	logger.Debug("total selected rows: %+v", len(currentRows))
 	logger.Debug("result of getSelectedRows: %+v", currentRows)
