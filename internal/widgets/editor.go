@@ -25,6 +25,16 @@ type MultiLineWidget struct {
 	widget.Entry
 }
 
+// GetSelection returns the current text selection and position.
+// The Fyne entry widget counts position from 0,0.
+// This function returns position from 1,1, to match standard editor conventions.
+func (m *MultiLineWidget) GetSelection() shared.TextSelection {
+	row := m.CursorRow + 1
+	col := m.CursorColumn + 1
+	content := m.SelectedText()
+	return shared.NewTextSelection(content, row, col)
+}
+
 // SelectionStart returns the selection cursor start position.
 // Returns -1,-1 if there is no selection
 func (m *MultiLineWidget) SelectionStart() shared.Position {

@@ -7,29 +7,19 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/fieldse/gist-editor/internal/github"
-	"github.com/fieldse/gist-editor/internal/shared"
 	"github.com/fieldse/gist-editor/internal/widgets"
 )
 
 // Editor represents the Gist editor window, and provides methods
 // to update the title & content of the editor widget
 type Editor struct {
+	*widgets.MultiLineWidget
 	Title                string
 	IsDirty              bool
 	editor               *widgets.MultiLineWidget // the text editor field
 	editWindow           fyne.Window              // the editor window
 	previewEditContainer *PreviewEditContainer    // a wrapper, containing the preview and edit widgets
 	IsVisible            bool
-}
-
-// GetSelection returns the current text selection and position.
-// Cursor position starts from 1,1, to match standard editors.
-// (the Fyne entry widget counts position from 0,0)
-func (e *Editor) GetSelection() shared.TextSelection {
-	row := e.editor.CursorRow + 1
-	col := e.editor.CursorColumn + 1
-	content := e.editor.SelectedText()
-	return shared.NewTextSelection(content, row, col)
 }
 
 // Show displays the editor window
@@ -44,7 +34,7 @@ func (e *Editor) Hide() {
 	e.editWindow.Hide()
 }
 
-// GetContent returns the text contents of the
+// GetContent returns the text contents of the editor
 func (e *Editor) Content() string {
 	return e.editor.Text
 }
