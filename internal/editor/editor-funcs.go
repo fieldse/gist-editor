@@ -7,6 +7,7 @@ import (
 
 	"github.com/fieldse/gist-editor/internal/logger"
 	"github.com/fieldse/gist-editor/internal/shared"
+	"github.com/fieldse/gist-editor/internal/widgets"
 )
 
 type TextSelection = shared.TextSelection
@@ -15,18 +16,20 @@ type Position = shared.Position
 // EditorFunctions is the set of Markdown syntax operations that can be performed
 // on the editor text content
 type EditorFunctions struct {
+	editor         *widgets.MultiLineWidget
 	getContent     func() string
 	setContent     func(string)
 	getSelection   func() shared.TextSelection
 	selectionStart func() shared.Position
 }
 
-func NewEditorFunctions(getContent func() string, setContent func(string), getSelection func() shared.TextSelection, selectionStart func() shared.Position) *EditorFunctions {
+func NewEditorFunctions(m *widgets.MultiLineWidget) *EditorFunctions {
 	return &EditorFunctions{
-		getContent:     getContent,
-		setContent:     setContent,
-		getSelection:   getSelection,
-		selectionStart: selectionStart,
+		editor:         m,
+		getContent:     m.Content,
+		setContent:     m.SetText,
+		getSelection:   m.GetSelection,
+		selectionStart: m.SelectionStart,
 	}
 }
 
@@ -94,32 +97,47 @@ func (e *EditorFunctions) UL() {
 
 // OL styles the current row as ordered list item
 func (e *EditorFunctions) OL() {
+	logger.Debug("placeholder for OL action")
 	// TODO
 }
 
 // Checklist styles the current row as a checklist item
 func (e *EditorFunctions) Checklist() {
+	logger.Debug("placeholder for Checklist action")
 	e.doTextOperation(rowToChecklistItem)
 }
 
 // Image uploads and inserts an image at the current location
 func (e *EditorFunctions) Image() {
+	logger.Debug("placeholder for Image action")
 	// TODO
 }
 
 // QuoteBlock styles the current selection as a quote block
 func (e *EditorFunctions) QuoteBlock() {
+	logger.Debug("placeholder for QuoteBlock action")
 	// TODO
 }
 
 // CodeBlock styles the current selection as a code block
 func (e *EditorFunctions) CodeBlock() {
+	logger.Debug("placeholder for CodeBlock action")
 	// TODO
 }
 
 // PageBreak inserts a page break at the current position
 func (e *EditorFunctions) PageBreak() {
 	// TODO
+}
+
+// Undo the most recent changes to the text content
+func (e *EditorFunctions) Undo() {
+	e.editor.Undo()
+}
+
+// Redo the most recent changes to the text content
+func (e *EditorFunctions) Redo() {
+	e.editor.Redo()
 }
 
 // selectionToBold adds Markdown bold styling to the current text selection:

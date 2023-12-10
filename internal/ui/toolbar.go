@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 	editorfunctions "github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/logger"
-	"github.com/fieldse/gist-editor/internal/shared"
 	"github.com/fieldse/gist-editor/internal/widgets"
 )
 
@@ -28,32 +27,11 @@ func MarkdownToolbarUI(e *widgets.MultiLineWidget) *widget.Toolbar {
 		logger.Fatal("load resources failed", err)
 	}
 	// Text editing functions to pass to the toolbar
-	getText := func() string {
-		return e.Text
-	}
-	setText := func(s string) {
-		e.SetText(s)
-	}
-	getSelection := func() shared.TextSelection {
-		return e.GetSelection()
-	}
-	selectionStart := func() shared.Position {
-		return e.SelectionStart()
-	}
-	undoFunc := func() {
-		e.Undo()
-	}
-	redoFunc := func() {
-		e.Redo()
-	}
-	debugFunc := func() {
-		e.DebugTextSelection()
-	}
-	actions := editorfunctions.NewEditorFunctions(getText, setText, getSelection, selectionStart)
+	actions := editorfunctions.NewEditorFunctions(e)
 
 	// Menu items
 	return widget.NewToolbar(
-		widget.NewToolbarAction(theme.BrokenImageIcon(), debugFunc),
+		widget.NewToolbarAction(theme.BrokenImageIcon(), func() { e.DebugTextSelection() }),
 		widget.NewToolbarAction(icons.H1Icon, actions.H1),
 		widget.NewToolbarAction(icons.H2Icon, actions.H2),
 		widget.NewToolbarAction(icons.H3Icon, actions.H3),
@@ -64,7 +42,7 @@ func MarkdownToolbarUI(e *widgets.MultiLineWidget) *widget.Toolbar {
 		widget.NewToolbarAction(icons.QuoteBlockIcon, actions.QuoteBlock),
 		widget.NewToolbarAction(icons.CodeBlockIcon, actions.CodeBlock),
 		widget.NewToolbarAction(icons.PageBreakIcon, actions.PageBreak),
-		widget.NewToolbarAction(icons.UndoIcon, undoFunc),
-		widget.NewToolbarAction(icons.RedoIcon, redoFunc),
+		widget.NewToolbarAction(icons.UndoIcon, actions.Undo),
+		widget.NewToolbarAction(icons.RedoIcon, actions.Redo),
 	)
 }

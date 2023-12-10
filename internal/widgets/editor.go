@@ -26,6 +26,16 @@ type MultiLineWidget struct {
 	widget.Entry
 }
 
+// Content returns the editor's text content
+func (m *MultiLineWidget) Content() string {
+	return m.Text
+}
+
+// SetContent replaces the editor's text content
+func (m *MultiLineWidget) SetContent(t string) {
+	m.SetText(t)
+}
+
 // GetSelection returns the current text selection and position.
 // The Fyne entry widget counts position from 0,0.
 // This function returns position from 1,1, to match standard editor conventions.
@@ -59,11 +69,13 @@ func (m *MultiLineWidget) RowCount() int {
 
 // Undo the most recent changes to the text content
 func (m *MultiLineWidget) Undo() {
+	logger.Debug("placeholder for Undo action")
 	// TODO
 }
 
 // Redo the most recent changes to the text content
 func (m *MultiLineWidget) Redo() {
+	logger.Debug("placeholder for Redo action")
 	// TODO
 }
 

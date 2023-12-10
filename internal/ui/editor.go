@@ -15,7 +15,6 @@ import (
 type Editor struct {
 	*widgets.MultiLineWidget
 	Title                string
-	IsDirty              bool
 	editor               *widgets.MultiLineWidget // the text editor field
 	editWindow           fyne.Window              // the editor window
 	previewEditContainer *PreviewEditContainer    // a wrapper, containing the preview and edit widgets
