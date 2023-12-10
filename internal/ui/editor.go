@@ -85,11 +85,11 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 	// Title
 	titleBox := TitleBox(g.Filename)
 
-	// Text editor toolbar
-	textEditorToolbar := MarkdownToolbarUI(cfg)
-
 	// Editor entry widget -- this is a custom widget that extends fyne's widget.Entry
 	editor := widgets.NewMultilineWidget(g.Content)
+
+	// Text editor toolbar
+	textEditorToolbar := MarkdownToolbarUI(editor)
 
 	// Top section -- edit toolbar & title
 	topBox := container.NewVBox(widget.NewLabel("Edit"), textEditorToolbar)

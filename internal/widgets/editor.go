@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
+	"github.com/fieldse/gist-editor/internal/logger"
 	"github.com/fieldse/gist-editor/internal/shared"
 )
 
@@ -54,4 +55,19 @@ func (m *MultiLineWidget) ContentRows() []string {
 // RowCount returns the number of rows in the text content
 func (m *MultiLineWidget) RowCount() int {
 	return strings.Count(m.Text, "\n")
+}
+
+// Undo the most recent changes to the text content
+func (m *MultiLineWidget) Undo() {
+	// TODO
+}
+
+// Redo the most recent changes to the text content
+func (m *MultiLineWidget) Redo() {
+	// TODO
+}
+
+// Debug current text selection
+func (m *MultiLineWidget) DebugTextSelection() {
+	logger.Debug("content: %s", m.Text)
 }

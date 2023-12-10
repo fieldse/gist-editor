@@ -47,11 +47,6 @@ func (e *EditorFunctions) doTextOperation(f textOperation) error {
 	return nil
 }
 
-// Debug current text selection
-func (e *EditorFunctions) DebugTextSelection() {
-	logger.Debug("content: %s", e.getContent())
-}
-
 // H1 styles the current selection as H1
 func (e *EditorFunctions) H1() {
 	e.doTextOperation(rowToH1)

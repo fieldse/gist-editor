@@ -8,6 +8,7 @@ import (
 	editorfunctions "github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/logger"
 	"github.com/fieldse/gist-editor/internal/shared"
+	"github.com/fieldse/gist-editor/internal/widgets"
 )
 
 // MarkdownToolbar represents a toolbar for the markdown text editor
@@ -21,35 +22,38 @@ func (m MarkdownToolbar) New() *MarkdownToolbar {
 
 // MarkdownToolbar returns toolbar component for the markdown text editor
 // Will throw error and exit program on failure
-func MarkdownToolbarUI(a *AppConfig) *widget.Toolbar {
+func MarkdownToolbarUI(e *widgets.MultiLineWidget) *widget.Toolbar {
 	icons, err := ToolbarIcons{}.Load()
 	if err != nil {
 		logger.Fatal("load resources failed", err)
 	}
 	// Text editing functions to pass to the toolbar
 	getText := func() string {
-		return a.Editor.Content()
+		return e.Text
 	}
 	setText := func(s string) {
-		a.Editor.SetContent(s)
+		e.SetText(s)
 	}
 	getSelection := func() shared.TextSelection {
-		return a.Editor.GetSelection()
+		return e.GetSelection()
 	}
 	selectionStart := func() shared.Position {
-		return a.Editor.SelectionStart()
+		return e.SelectionStart()
 	}
 	undoFunc := func() {
-		a.Editor.Undo()
+		e.Undo()
 	}
 	redoFunc := func() {
-		a.Editor.Redo()
+		e.Redo()
+	}
+	debugFunc := func() {
+		e.DebugTextSelection()
 	}
 	actions := editorfunctions.NewEditorFunctions(getText, setText, getSelection, selectionStart)
 
 	// Menu items
 	return widget.NewToolbar(
-		widget.NewToolbarAction(theme.BrokenImageIcon(), actions.DebugTextSelection),
+		widget.NewToolbarAction(theme.BrokenImageIcon(), debugFunc),
 		widget.NewToolbarAction(icons.H1Icon, actions.H1),
 		widget.NewToolbarAction(icons.H2Icon, actions.H2),
 		widget.NewToolbarAction(icons.H3Icon, actions.H3),
