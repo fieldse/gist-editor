@@ -236,47 +236,6 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 	return replaceRowPrefix(selection, orig, " - [ ] ")
 }
 
-// getSelectionRange returns the preceding or trailing N characters from a text,
-// relative to the position of the cursor.
-// Parameters:
-//
-//	text    	the original text
-//	sel     	the selection and cursor position
-//	reverse		move backward in the selection from the cursor
-func getSelectionRange(text string, sel TextSelection, reverse bool) (string, error) {
-	// Cursor position
-	rowNum := sel.Position.Row
-	colNum := sel.Position.Col
-
-	asLines := toLines(text)
-	// Get absolute position of the cursor relative to the original string
-	// start at the column character number
-	var charIndex int = colNum - 1
-	if rowNum > len(asLines)+1 {
-		return "", fmt.Errorf("selection row %d out of range", rowNum)
-	}
-	for r := 0; r < rowNum; r++ {
-		// Add row lengths until we have reached the last row
-		if rowNum != r {
-			charIndex = charIndex + len(asLines[r]) + 1 // we add a character for the newline character
-		}
-	}
-	// we should now have the absolute index of the selection cursor, relative to the original text
-	var startChar, endChar int
-	if reverse { // If it's in reverse order, the starting position precedes the cursor by some characters
-		startChar = charIndex - len(sel.Content)
-		endChar = charIndex
-	} else { // Otherwise, the selection end follows the cursor
-		startChar = charIndex
-		endChar = charIndex + len(sel.Content)
-
-	}
-	if endChar > len(text) {
-		return "", fmt.Errorf("selection exceeds text length: character %d, text length is %d", endChar, len(text))
-	}
-	return text[startChar:endChar], nil
-}
-
 // getSelectedRows returns the row(s) of a text selection, separated by newlines.
 func getSelectedRows(text string, sel TextSelection) ([]string, error) {
 	var rows []string

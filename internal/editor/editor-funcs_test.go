@@ -2,7 +2,6 @@
 package editorfunctions
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -133,45 +132,5 @@ func Test_rowToH1(t *testing.T) {
 		res, err := rowToH1(x.s, TextSelection{Position: Position{Col: 3, Row: 3}, Content: "foo"})
 		assert.Nil(t, err)
 		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
-	}
-}
-
-func Test_getSelectionRange(t *testing.T) {
-	// TODO: make test cases here
-	var cases = []struct {
-		sel         TextSelection
-		text        string // the original text to test
-		reverse     bool
-		expect      string
-		shouldErr   bool // should the function return an error : ie, string out of bounds
-		shouldMatch bool // should the match expected result
-	}{
-		// Forwards selection
-		{sel: selectionLineThreeWordTwo, text: exampleText, reverse: false, expect: "line", shouldErr: false, shouldMatch: true},
-		{sel: selectionLineThreeWordTwo, text: exampleText, reverse: false, expect: "foo", shouldErr: false, shouldMatch: false}, // different word, should not match
-
-		// Reverse selection
-		{sel: selectionLineThreeWordTwo, text: exampleText, reverse: true, expect: "line", shouldErr: false, shouldMatch: false}, // in reverse, should not return the "forwards" string
-		{sel: selectionLineThreeWordTwo, text: exampleText, reverse: true, expect: "ple ", shouldErr: false, shouldMatch: true},  // in reverse, should return the preceding several characters
-
-		// Exceeds text range
-		{sel: selectionLineThreeWordTwo, text: "", reverse: true, expect: "line", shouldErr: true, shouldMatch: false},
-	}
-	fmt.Printf("==== ORIGINAL TEXT: \n'%s'\n", exampleText)
-	for i, x := range cases {
-		fmt.Printf("==== TEST CASE [%d/%d] ==== : %+v\n", i+1, len(cases), x)
-		res, err := getSelectionRange(x.text, x.sel, x.reverse)
-		fmt.Printf("=== [debug] got result: '%+v'\n", res)
-
-		if x.shouldErr {
-			assert.NotNil(t, err, "should return error: got %v", err)
-		} else {
-			assert.Nilf(t, err, "should not return error: got %v", err)
-		}
-		if x.shouldMatch {
-			assert.Equalf(t, x.expect, res, "expected '%s', got '%s'", x.expect, res)
-		} else {
-			assert.NotEqual(t, x.expect, res, "should not get '%s', but got '%s'", x.expect, res)
-		}
 	}
 }

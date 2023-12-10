@@ -52,7 +52,6 @@ func (m *MultiLineWidget) GetSelection() shared.TextSelection {
 }
 
 // SelectionStart returns the selection cursor start position.
-// Returns -1,-1 if there is no selection
 func (m *MultiLineWidget) SelectionStart() shared.Position {
 	var row = reflect.ValueOf(m).Elem().FieldByName("selectRow").Int()
 	var col = reflect.ValueOf(m).Elem().FieldByName("selectColumn").Int()
