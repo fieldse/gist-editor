@@ -7,17 +7,6 @@ type TextSelection struct {
 	Content  string
 }
 
-// NewTextSelection returns a new TextSelection instance
-func NewTextSelection(content string, row int, col int) TextSelection {
-	return TextSelection{
-		Position: Position{
-			Row: row,
-			Col: col,
-		},
-		Content: content,
-	}
-}
-
 // TODO -- this might be useful for clarifying the exact position of the character selection
 type AbsoluteCharacterRange struct {
 	Start int

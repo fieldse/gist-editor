@@ -36,14 +36,19 @@ func (m *MultiLineWidget) SetContent(t string) {
 	m.SetText(t)
 }
 
+// CursorPosition returns the cursor position, in row/column format
+func (m *MultiLineWidget) CursorPosition() shared.Position {
+	return shared.Position{Row: m.CursorRow + 1, Col: m.CursorColumn + 1}
+}
+
 // GetSelection returns the current text selection and position.
 // The Fyne entry widget counts position from 0,0.
 // This function returns position from 1,1, to match standard editor conventions.
 func (m *MultiLineWidget) GetSelection() shared.TextSelection {
-	row := m.CursorRow + 1
-	col := m.CursorColumn + 1
-	content := m.SelectedText()
-	return shared.NewTextSelection(content, row, col)
+	return shared.TextSelection{
+		Position: m.CursorPosition(),
+		Content:  m.SelectedText(),
+	}
 }
 
 // SelectionStart returns the selection cursor start position.
@@ -52,8 +57,8 @@ func (m *MultiLineWidget) SelectionStart() shared.Position {
 	var row = reflect.ValueOf(m).Elem().FieldByName("selectRow").Int()
 	var col = reflect.ValueOf(m).Elem().FieldByName("selectColumn").Int()
 	return shared.Position{
-		Row: int(row),
-		Col: int(col),
+		Row: int(row + 1),
+		Col: int(col + 1),
 	}
 }
 
@@ -82,4 +87,6 @@ func (m *MultiLineWidget) Redo() {
 // Debug current text selection
 func (m *MultiLineWidget) DebugTextSelection() {
 	logger.Debug("content: %s", m.Text)
+	logger.Debug("selStart: %+v", m.SelectionStart())
+	logger.Debug("cursor position: %+v", m.CursorPosition())
 }
