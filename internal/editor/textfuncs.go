@@ -172,59 +172,80 @@ func stripPrefixes(s string) string {
 	return s
 }
 
-// replaceRowPrefix adds a styling prefix to the current row, replacing any existing
-// heading or list styling.
+// replaceRowPrefixes adds a prefix to a each row in a range from a text
+// This replaces any existing Markdown heading or list styling on the row.
 //
-//	rowNumber  	the cursor row position, as returned from the editor. Counts from 1)
-//	orig 		the original editor contents
+//	text 		the original editor contents
+//	startRow  	the first row of the range (starts from 1)
+//	endRow  	the last row of the range  (starts from 1)
+//	newPrefix	the new style prefix to add to each row
 //
 // Examples:
 //
-//	(prefix: '#') 	strings "foo', "# foo", and " - foo" all become "# foo"
-//	(prefix: ' - ') strings "foo", "# foo", and " - foo" all become " - foo"
-//	(prefix: 'baz') strings "foo", "# foo", and " - foo" all become "bazfoo"
-func replaceRowPrefix(sel TextSelection, orig string, newPrefix string) (string, error) {
-	var newRows []string
-	rows, err := getSelectedRows(orig, sel)
-	if err != nil {
-		return "", err
+//	(Given rows "foo', "# foo", and " - foo")
+//		prefix: '#' 		all rows become "# foo"
+//		prefix: ' - '  		all rows become " - foo"
+//		prefix: 'baz'  		all rows become "baz foo"
+func replaceRowPrefixes(text string, startRow int, endRow int, newPrefix string) (string, error) {
+	asRows := toLines(text)
+	// TODO - add checks against the row lengths
+	for i := startRow; i <= endRow; i++ {
+		row := asRows[i+1]
+		// TODO -- improve this by not mutating the original set
+		asRows[i+1] = replacePrefix(row, newPrefix)
 	}
-	for _, row := range rows {
-		rowNum := 0                              // FIXME -- get row number
-		newRow := newPrefix + stripPrefixes(row) // strip existing tags and append the new one
-		replaceNthLine(rowNum, orig, newRow)
+	return strings.Join(asRows, "\n"), nil
+}
+
+// prefixSelectedRows replaces the prefix on all selected rows of a text
+func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (string, error) {
+	curPos := sel.CursorPosition.Row
+	selPos := sel.SelectionStart.Row
+	var start, end int
+	if curPos > selPos {
+		start = selPos
+		end = curPos
+	} else {
+		start = curPos
+		end = selPos
 	}
-	return strings.Join(newRows, "\n"), nil
+	return replaceRowPrefixes(text, start, end, newPrefix)
+}
+
+// replacePrefix adds a styling prefix to a text string, replacing any existing
+// Markdown heading or list styling.
+func replacePrefix(text string, newPrefix string) string {
+	return newPrefix + stripPrefixes(text) // strip existing tags and append the new one
 }
 
 // rowToH1 adds an H1 styling prefix to the current row, replacing any existing style
 func rowToH1(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection, orig, "# ")
+	return prefixSelectedRows(orig, selection, "# ")
 }
 
 // rowToH2 adds an H2 styling prefix to the current row, replacing any existing style
 func rowToH2(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection, orig, "## ")
+	return prefixSelectedRows(orig, selection, "## ")
 }
 
 // rowToH3 adds an H3 styling prefix to the current row, replacing any existing style
 func rowToH3(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection, orig, "### ")
+	return prefixSelectedRows(orig, selection, "### ")
 }
 
 // rowToH4 adds an H4 styling prefix to the current row, replacing any existing style
 func rowToH4(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection, orig, "### ")
+	return prefixSelectedRows(orig, selection, "### ")
 }
 
 // rowToUL adds an undordered list style to the current row, replacing any existing style
 func rowToUL(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection, orig, " - ")
+	return prefixSelectedRows(orig, selection, " - ")
 }
 
 // rowToChecklistItem adds an checklist style prefix to the current row, replacing any existing style
 func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
-	return replaceRowPrefix(selection, orig, " - [ ] ")
+	return prefixSelectedRows(orig, selection, " - [ ] ")
 }
 
 // numLines returns a count of the rows in a text string
@@ -233,37 +254,37 @@ func numLines(t string) int {
 	return strings.Count(t, "\n") + 1
 }
 
-// getSelectedRows returns the row(s) of a text selection, separated by newlines.
-func getSelectedRows(text string, sel TextSelection) ([]string, error) {
-	var rows []string
+// // getSelectedRows returns the row(s) of a text selection, separated by newlines.
+// func getSelectedRows(text string, sel TextSelection) ([]string, error) {
+// 	var rows []string
 
-	asLines := toLines(text)
+// 	asLines := toLines(text)
 
-	// If the selection goes backwards more than the current line,
-	// have a multi-line selection
-	rowCount := numLines(sel.Content)
+// 	// If the selection goes backwards more than the current line,
+// 	// have a multi-line selection
+// 	rowCount := numLines(sel.Content)
 
-	// FIXME: this selection could be either forwards or backwards.
-	var isForwards bool = true
+// 	// FIXME: this selection could be either forwards or backwards.
+// 	var isForwards bool = true
 
-	// Iterate (forward/backward) for N lines
-	j := sel.CursorPosition.Row - 1 // index of the current row in the lines array
-	for i := 0; i < rowCount; i++ {
-		currentRow := asLines[j]
-		if isForwards {
-			// If user has selected forwards, the cursor is at the end of the selection.
-			// Therefore move backwards by line.
-			rows = append([]string{currentRow}, rows...)
-			j = j - 1
-		} else {
-			// If cursor selection is going backwards, the cursor is at the start of the
-			// selection. Therefore move forwards by line.
-			rows = append(rows, currentRow)
-			j = j + 1
-		}
-	}
-	return rows, nil
-}
+// 	// Iterate (forward/backward) for N lines
+// 	j := sel.CursorPosition.Row - 1 // index of the current row in the lines array
+// 	for i := 0; i < rowCount; i++ {
+// 		currentRow := asLines[j]
+// 		if isForwards {
+// 			// If user has selected forwards, the cursor is at the end of the selection.
+// 			// Therefore move backwards by line.
+// 			rows = append([]string{currentRow}, rows...)
+// 			j = j - 1
+// 		} else {
+// 			// If cursor selection is going backwards, the cursor is at the start of the
+// 			// selection. Therefore move forwards by line.
+// 			rows = append(rows, currentRow)
+// 			j = j + 1
+// 		}
+// 	}
+// 	return rows, nil
+// }
 
 // replaceNthLine replaces the Nth line of a piece of text with a new string.
 // Line count starts at 1, not at zero.
