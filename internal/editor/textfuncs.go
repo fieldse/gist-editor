@@ -154,11 +154,34 @@ func isMultiline(t TextSelection) bool {
 
 // replaceSelection replaces the selected segment of a text with the given string.
 // This will fail if the selection is multiple line
-func replaceSelection(text string, selection TextSelection, replaceWith string) (string, error) {
-	if isMultiline(selection) {
+func replaceSelection(text string, sel TextSelection, replaceWith string) (string, error) {
+	if isMultiline(sel) {
 		return "", fmt.Errorf("multiple line selection not supported")
 	}
-	return replaceChunk(text, selection, replaceWith)
+	asLines := toLines(text)
+	selected := sel.Content
+	start, end := startAndEndPositions(sel)
+	rowNum := sel.CursorPosition.Row - 1
+	startChar := start.Col - 1
+	endChar := end.Col - 1
+	row := asLines[rowNum]
+	// -- row should contain the given string
+	if !strings.Contains(row, selected) {
+		return "", fmt.Errorf("replace string failed: original does not contain substring %s", selected)
+	}
+
+	pref := row[0:startChar]      // the chunk before the selection
+	mid := row[startChar:endChar] // this should equal our current selection
+	suffix := row[endChar:]       // the chunk after the selection
+
+	// Sanity checks: middle chunk should be the current selection
+	if mid != selected {
+		return "", fmt.Errorf("current selection does not match given substring: selection is  '%s', but got '%s'", selected, mid)
+	}
+
+	// Replace the row with the substituted version
+	asLines[rowNum] = pref + replaceWith + suffix
+	return strings.Join(asLines, "\n"), nil
 }
 
 // selectionToBold adds Markdown bold styling to the current text selection:
@@ -282,31 +305,4 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 // toLines breaks the current text selection to lines
 func toLines(text string) []string {
 	return strings.Split(text, "\n")
-}
-
-// replaceChunk replaces current selection in a piece of text with a given string
-// TODO: unify this with replaceSelection
-func replaceChunk(text string, sel TextSelection, replaceWith string) (string, error) {
-	asLines := toLines(text)
-	selected := sel.Content
-	start, end := startAndEndPositions(sel)
-	rowNum := sel.CursorPosition.Row - 1
-	row := asLines[rowNum]
-	// -- row should contain the given string
-	if !strings.Contains(row, selected) {
-		return "", fmt.Errorf("replace string failed: original does not contain substring %s", selected)
-	}
-
-	pref := row[0:start.Col]      // the chunk before the selection
-	mid := row[start.Col:end.Col] // this should equal our current selection
-	suffix := row[end.Col:]       // the chunk after the selection
-
-	// Sanity checks: middle chunk should be the current selection
-	if mid != selected {
-		return "", fmt.Errorf("current selection does not match given substring: selection is  '%s', but got '%s'", selected, mid)
-	}
-
-	// Replace the row with the substituted version
-	asLines[rowNum] = pref + replaceWith + suffix
-	return strings.Join(asLines, "\n)"), nil
 }
