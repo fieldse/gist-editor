@@ -11,13 +11,13 @@ import (
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
 
 // Text selection from the above example text -- the word "line" from line 3
-var selectionLineThreeWordTwo = TextSelection{Position: Position{Row: 3, Col: 9}, Content: "line"}
+var selectionLineThreeWordTwo = TextSelection{CursorPosition: Position{Row: 3, Col: 9}, Content: "line"}
 
 // Text selection from the above example text -- from beginning of line 1 to end of line 2
-var multiLineSelectionLines1and2 = TextSelection{Position: Position{Row: 2, Col: 15}, Content: "example line 1\nexample line 2"}
+var multiLineSelectionLines1and2 = TextSelection{CursorPosition: Position{Row: 2, Col: 15}, Content: "example line 1\nexample line 2"}
 
 // Multiline selection from the above example text -- from "line" in line 2 to "example" in line 3
-var multiLineSelectionLines2and3 = TextSelection{Position: Position{Row: 3, Col: 8}, Content: "line 2\nexample"}
+var multiLineSelectionLines2and3 = TextSelection{CursorPosition: Position{Row: 3, Col: 8}, Content: "line 2\nexample"}
 
 func Test_selectionToBold(t *testing.T) {
 	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
@@ -129,7 +129,7 @@ func Test_rowToH1(t *testing.T) {
 		{s: "line 1\nline 2\n#bar", expect: "line 1\nline 2\n# #bar"},
 	}
 	for _, x := range cases {
-		res, err := rowToH1(x.s, TextSelection{Position: Position{Col: 3, Row: 3}, Content: "foo"})
+		res, err := rowToH1(x.s, TextSelection{CursorPosition: Position{Col: 3, Row: 3}, Content: "foo"})
 		assert.Nil(t, err)
 		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
 	}

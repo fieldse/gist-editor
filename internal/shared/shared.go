@@ -3,9 +3,13 @@ package shared
 
 // TextSelection represents the position and content of the editor's current text selection
 type TextSelection struct {
-	Position Position // cursor position, using rows and columns
-	Content  string
+	CursorPosition Position // cursor position, using rows and columns
+	Content        string
+	SelectionStart Position // beginning position of the selection
 }
+
+// HasSelection returns true if there is a current text selection
+func (s TextSelection) HasSelection() bool { return len(s.Content) > 0 }
 
 // TODO -- this might be useful for clarifying the exact position of the character selection
 type AbsoluteCharacterRange struct {

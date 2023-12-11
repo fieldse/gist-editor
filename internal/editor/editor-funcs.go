@@ -236,6 +236,12 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 	return replaceRowPrefix(selection, orig, " - [ ] ")
 }
 
+// numLines returns a count of the rows in a text string
+// eg:	"foo\nbar" returns 2
+func numLines(t string) int {
+	return strings.Count(t, "\n") + 1
+}
+
 // getSelectedRows returns the row(s) of a text selection, separated by newlines.
 func getSelectedRows(text string, sel TextSelection) ([]string, error) {
 	var rows []string
@@ -244,21 +250,23 @@ func getSelectedRows(text string, sel TextSelection) ([]string, error) {
 
 	// If the selection goes backwards more than the current line,
 	// have a multi-line selection
-	numlines := strings.Count(sel.Content, "\n") + 1
+	rowCount := numLines(sel.Content)
 
 	// FIXME: this selection could be either forwards or backwards.
 	var isForwards bool = true
 
 	// Iterate (forward/backward) for N lines
-	j := sel.Position.Row - 1 // index of the current row in the lines array
-	for i := 0; i < numlines; i++ {
+	j := sel.CursorPosition.Row - 1 // index of the current row in the lines array
+	for i := 0; i < rowCount; i++ {
 		currentRow := asLines[j]
 		if isForwards {
-			// If user has selected forwards, the cursor is at the end of the selection. Therefore move backwards by line.
+			// If user has selected forwards, the cursor is at the end of the selection.
+			// Therefore move backwards by line.
 			rows = append([]string{currentRow}, rows...)
 			j = j - 1
-		} else { // If cursor selection is going backwards, the cursor is at the start of the selection.
-			// Therefore we move forwards by line
+		} else {
+			// If cursor selection is going backwards, the cursor is at the start of the
+			// selection. Therefore move forwards by line.
 			rows = append(rows, currentRow)
 			j = j + 1
 		}
@@ -286,7 +294,7 @@ func toLines(text string) []string {
 // replaceChunk replaces current selection in a piece of text with a given string
 func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
 	// Extract row to edit
-	rowNum := sel.Position.Row
+	rowNum := sel.CursorPosition.Row
 	rows, err := getSelectedRows(orig, sel)
 	if err != nil {
 		return "", err
@@ -302,8 +310,8 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	selected := sel.Content
 	// If there is a selection, the cursor position is at the end.
 	// So, we count backwards to find the start position
-	end := sel.Position.Col - 1  // Cursor position, zero based
-	start := end - len(selected) // Counting backwards to find the start of the selection
+	end := sel.CursorPosition.Col - 1 // Cursor position, zero based
+	start := end - len(selected)      // Counting backwards to find the start of the selection
 
 	// Sanity checks
 	// -- cursor column position shouldn't exceed length of the row

@@ -46,9 +46,23 @@ func (m *MultiLineWidget) CursorPosition() shared.Position {
 // This function returns position from 1,1, to match standard editor conventions.
 func (m *MultiLineWidget) GetSelection() shared.TextSelection {
 	return shared.TextSelection{
-		Position: m.CursorPosition(),
-		Content:  m.SelectedText(),
+		CursorPosition: m.CursorPosition(),
+		Content:        m.SelectedText(),
+		SelectionStart: m.SelectionStart(),
 	}
+}
+
+// SelectedRowRange returns the row numbers of the current text selection.
+// This returns start -> end, regardless if the selection is forwards or backwards.
+// For example, if the current selection spans from rows 2 to 3, this would return 2,3
+// IF the selection is reversed, it will still return 2,3
+func (m *MultiLineWidget) SelectedRowRange() (int, int) {
+	sel := m.GetSelection()
+	selStart, curPos := sel.SelectionStart.Row, sel.CursorPosition.Row
+	if curPos < selStart {
+		return curPos, selStart
+	}
+	return selStart, curPos
 }
 
 // SelectionStart returns the selection cursor start position.
@@ -86,6 +100,8 @@ func (m *MultiLineWidget) Redo() {
 // Debug current text selection
 func (m *MultiLineWidget) DebugTextSelection() {
 	logger.Debug("content: %s", m.Text)
-	logger.Debug("selStart: %+v", m.SelectionStart())
 	logger.Debug("cursor position: %+v", m.CursorPosition())
+	logger.Debug("selection: %+v", m.GetSelection())
+	start, end := m.SelectedRowRange()
+	logger.Debug("selected rows: %d, %d", start, end)
 }
