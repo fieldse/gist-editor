@@ -229,41 +229,28 @@ func stripPrefixes(s string) string {
 // replaceRowPrefixes adds a prefix to a each row in a range from a text
 // This replaces any existing Markdown heading or list styling on the row.
 //
-//	text 		the original editor contents
-//	startRow  	the first row of the range (starts from 1)
-//	endRow  	the last row of the range  (starts from 1)
-//	newPrefix	the new style prefix to add to each row
+//	Examples:
 //
-// Examples:
+// Given text, selection spanning three rows:
 //
-//	(Given rows "foo', "# foo", and " - foo")
-//		prefix: '#' 		all rows become "# foo"
-//		prefix: ' - '  		all rows become " - foo"
-//		prefix: 'baz'  		all rows become "baz foo"
-func replaceRowPrefixes(text string, startRow int, endRow int, newPrefix string) (string, error) {
+//	# foo
+//	- bar
+//	3. baz
+//
+// Results:
+//
+//	prefix: '#' 		result: "# foo\n# bar\n# baz"
+//	prefix: ' - '  		result: " - foo\n - bar\n - baz"
+//	prefix: '1. '  		result: "1. foo\n1. bar\n1. baz"
+func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (string, error) {
 	asRows := toLines(text)
-	// TODO - add checks against the row lengths
-	for i := startRow; i <= endRow; i++ {
-		row := asRows[i+1]
-		// TODO -- improve this by not mutating the original set
-		asRows[i+1] = replacePrefix(row, newPrefix)
+	start, end := startAndEndPositions(sel)
+	// Iterate by row, replacing the prefix
+	for i := start.Row; i <= end.Row; i++ {
+		row := asRows[i-1]
+		asRows[i-1] = replacePrefix(row, newPrefix)
 	}
 	return strings.Join(asRows, "\n"), nil
-}
-
-// prefixSelectedRows replaces the prefix on all selected rows of a text
-func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (string, error) {
-	curPos := sel.CursorPosition.Row
-	selPos := sel.SelectionStart.Row
-	var start, end int
-	if curPos > selPos {
-		start = selPos
-		end = curPos
-	} else {
-		start = curPos
-		end = selPos
-	}
-	return replaceRowPrefixes(text, start, end, newPrefix)
 }
 
 // replacePrefix adds a styling prefix to a text string, replacing any existing

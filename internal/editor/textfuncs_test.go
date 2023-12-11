@@ -102,23 +102,69 @@ func Test_stripPrefixes(t *testing.T) {
 
 func Test_rowToH1(t *testing.T) {
 	var cases = []struct {
-		s      string
-		expect string
-		sel    TextSelection
+		s          string
+		expect     string
+		contentStr string
 	}{
-		{s: "line 1\nline 2\nfoo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n# foo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n## foo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n## foo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n### foo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n#### foo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n - foo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n - [ ] foo", expect: "line 1\nline 2\n# foo"},
-		{s: "line 1\nline 2\n----bar", expect: "line 1\nline 2\n# ----bar"},
-		{s: "line 1\nline 2\n#bar", expect: "line 1\nline 2\n# #bar"},
+		{
+			s:          "line 1\nline 2\nfoo\nline 4\nline 5",
+			contentStr: "line 1\nline 2\nline 3",
+			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
+		},
+		{
+			s:          "line 1\nline 2\n# line 3\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n# line 3",
+			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
+		},
+		{
+			s:          "line 1\nline 2\n## line 3\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n## line 3",
+			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
+		},
+		{
+			s:          "line 1\nline 2\n## line 3\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n## line 3",
+			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
+		},
+		{
+			s:          "line 1\nline 2\n### line 3\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n### line 3",
+			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
+		},
+		{
+			s:          "line 1\nline 2\n#### line 3\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n#### line 3",
+			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
+		},
+		{
+			s:          "line 1\nline 2\n - line 3\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n - line 3",
+
+			expect: "line 1\nline 2\n# line 3\n# line 4\nline5",
+		},
+		{
+			s:          "line 1\nline 2\n - [ ] line 3\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n - [ ] line 3",
+
+			expect: "line 1\nline 2\n# line 3",
+		},
+		{
+			s:          "line 1\nline 2\n----bar\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n----bar",
+			expect:     "line 1\nline 2\n# ----bar\nline 4\nline 5",
+		},
+		{
+			s:          "line 1\nline 2\n#bar\nline 4\nline 5",
+			contentStr: "line 1\nline 2\n#bar",
+			expect:     "line 1\nline 2\n# #bar\nline 4\nline 5",
+		},
 	}
 	for _, x := range cases {
-		res, err := rowToH1(x.s, TextSelection{CursorPosition: Position{Col: 3, Row: 3}, Content: "foo"})
+		res, err := rowToH1(x.s, TextSelection{
+			CursorPosition: Position{Row: 4, Col: 1},
+			SelectionStart: Position{Row: 3, Col: 1},
+			Content:        x.contentStr,
+		})
 		assert.Nil(t, err)
 		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
 	}
