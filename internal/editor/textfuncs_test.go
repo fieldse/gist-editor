@@ -62,6 +62,21 @@ func Test_replaceSelection(t *testing.T) {
 	assert.Equalf(t, expect, res, "result doesn't match expected: got '%s'", res)
 }
 
+func Test_isMultiline(t *testing.T) {
+	s1 := TextSelection{
+		SelectionStart: Position{Row: 1, Col: 1},
+		CursorPosition: Position{Row: 1, Col: 12},
+		Content:        "hello world",
+	}
+	s2 := TextSelection{
+		SelectionStart: Position{Row: 1, Col: 1},
+		CursorPosition: Position{Row: 2, Col: 3},
+		Content:        "hello world\nhi",
+	}
+	assert.Falsef(t, isMultiline(s1), "should be single line: %v", s1)
+	assert.Truef(t, isMultiline(s2), "should be multiline: %v", s2)
+}
+
 func Test_stripPrefixes(t *testing.T) {
 	var cases = []struct {
 		s      string

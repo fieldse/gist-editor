@@ -149,7 +149,7 @@ func startAndEndPositions(t TextSelection) (Position, Position) {
 
 // isMultiline checks if a text selection spans multiple rows
 func isMultiline(t TextSelection) bool {
-	return t.SelectionStart.Row == t.CursorPosition.Row
+	return t.SelectionStart.Row != t.CursorPosition.Row
 }
 
 // replaceSelection replaces the selected segment of a text with the given string.
