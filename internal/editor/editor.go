@@ -1,5 +1,5 @@
 // Custom multline text entry widget
-package widgets
+package editor
 
 import (
 	"reflect"

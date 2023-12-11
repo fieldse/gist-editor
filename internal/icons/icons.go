@@ -1,5 +1,5 @@
 // Contains icons for the Markdown editor toolbar buttons
-package ui
+package icons
 
 import (
 	"fmt"

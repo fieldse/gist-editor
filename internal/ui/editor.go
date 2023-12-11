@@ -6,18 +6,18 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/fieldse/gist-editor/internal/editor"
 	"github.com/fieldse/gist-editor/internal/github"
-	"github.com/fieldse/gist-editor/internal/widgets"
 )
 
 // Editor represents the Gist editor window, and provides methods
 // to update the title & content of the editor widget
 type Editor struct {
-	*widgets.MultiLineWidget
+	*editor.MultiLineWidget
 	Title                string
-	editor               *widgets.MultiLineWidget // the text editor field
-	editWindow           fyne.Window              // the editor window
-	previewEditContainer *PreviewEditContainer    // a wrapper, containing the preview and edit widgets
+	editor               *editor.MultiLineWidget // the text editor field
+	editWindow           fyne.Window             // the editor window
+	previewEditContainer *PreviewEditContainer   // a wrapper, containing the preview and edit widgets
 	IsVisible            bool
 }
 
@@ -79,25 +79,25 @@ func (e Editor) New(cfg *AppConfig) *Editor {
 
 // Generates the UI for the edit window
 // Returns the container, and a pointer to the content editor, and a wrapper for the single-pane and split-pane containers,
-func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *widgets.MultiLineWidget, *PreviewEditContainer) {
+func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *editor.MultiLineWidget, *PreviewEditContainer) {
 
 	// Title
 	titleBox := TitleBox(g.Filename)
 
 	// Editor entry widget -- this is a custom widget that extends fyne's widget.Entry
-	editor := widgets.NewMultilineWidget(g.Content)
+	e := editor.NewMultilineWidget(g.Content)
 
 	// Text editor toolbar
-	textEditorToolbar := MarkdownToolbarUI(editor)
+	textEditorToolbar := editor.MarkdownToolbarUI(e)
 
 	// Top section -- edit toolbar & title
 	topBox := container.NewVBox(widget.NewLabel("Edit"), textEditorToolbar)
-	editPane := container.NewBorder(topBox, nil, nil, nil, editor)
+	editPane := container.NewBorder(topBox, nil, nil, nil, e)
 
 	// Preview pane
-	preview := widget.NewRichTextFromMarkdown(editor.Text)
+	preview := widget.NewRichTextFromMarkdown(e.Text)
 	previewPane := container.NewBorder(widget.NewLabel("Preview"), nil, nil, nil, preview)
-	editor.OnChanged = preview.ParseMarkdown // parse markdown to rich text on changed
+	e.OnChanged = preview.ParseMarkdown // parse markdown to rich text on changed
 
 	// Preview and edit pane wrapper
 	previewEditContainer := PreviewEditContainer{}.New(previewPane, editPane)
@@ -115,7 +115,7 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *wi
 
 	// Wrapper container
 	content := container.NewBorder(titleBox, buttons, nil, nil, previewEditContainer.Content)
-	return content, editor, previewEditContainer
+	return content, e, previewEditContainer
 }
 
 // PreviewEditContainer is the wrapper for the Preview and Edit panes.

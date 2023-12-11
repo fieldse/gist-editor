@@ -1,5 +1,5 @@
 // Functions for altering the content of the text editor text
-package editorfunctions
+package editor
 
 import (
 	"testing"
