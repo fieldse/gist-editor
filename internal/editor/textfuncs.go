@@ -131,6 +131,36 @@ func (e *toolbarActions) Redo() {
 	e.editor.Redo()
 }
 
+// startAndEndPositions returns start and end positions of a selection
+func startAndEndPositions(t TextSelection) (Position, Position) {
+	curPos, selPos := t.CursorPosition, t.SelectionStart
+	if curPos.Row > selPos.Row {
+		return selPos, curPos
+	}
+	if curPos.Row < selPos.Row {
+		return curPos, selPos
+	}
+	// equal row, so compare columns
+	if curPos.Col > selPos.Col {
+		return selPos, curPos
+	}
+	return curPos, selPos
+}
+
+// isMultiline checks if a text selection spans multiple rows
+func isMultiline(t TextSelection) bool {
+	return t.SelectionStart.Row == t.CursorPosition.Row
+}
+
+// replaceSelectionInLine replaces the selected segment of a text with the given string.
+// This will fail if the selection is multiple line
+func replaceSelectionInLine(text string, selection TextSelection, replaceWith string) (string, error) {
+	if isMultiline(selection) {
+		return "", fmt.Errorf("multiple line selection not supported")
+	}
+	return replaceChunk(text, selection, replaceWith)
+}
+
 // selectionToBold adds Markdown bold styling to the current text selection:
 // (ie: "foo" becomes "**foo**"")
 func selectionToBold(orig string, selection TextSelection) (string, error) {
@@ -254,90 +284,26 @@ func numLines(t string) int {
 	return strings.Count(t, "\n") + 1
 }
 
-// // getSelectedRows returns the row(s) of a text selection, separated by newlines.
-// func getSelectedRows(text string, sel TextSelection) ([]string, error) {
-// 	var rows []string
-
-// 	asLines := toLines(text)
-
-// 	// If the selection goes backwards more than the current line,
-// 	// have a multi-line selection
-// 	rowCount := numLines(sel.Content)
-
-// 	// FIXME: this selection could be either forwards or backwards.
-// 	var isForwards bool = true
-
-// 	// Iterate (forward/backward) for N lines
-// 	j := sel.CursorPosition.Row - 1 // index of the current row in the lines array
-// 	for i := 0; i < rowCount; i++ {
-// 		currentRow := asLines[j]
-// 		if isForwards {
-// 			// If user has selected forwards, the cursor is at the end of the selection.
-// 			// Therefore move backwards by line.
-// 			rows = append([]string{currentRow}, rows...)
-// 			j = j - 1
-// 		} else {
-// 			// If cursor selection is going backwards, the cursor is at the start of the
-// 			// selection. Therefore move forwards by line.
-// 			rows = append(rows, currentRow)
-// 			j = j + 1
-// 		}
-// 	}
-// 	return rows, nil
-// }
-
-// replaceNthLine replaces the Nth line of a piece of text with a new string.
-// Line count starts at 1, not at zero.
-// Returns error if N exceeds number of lines.
-func replaceNthLine(n int, text string, replaceWith string) (string, error) {
-	asLines := toLines(text)
-	if n > len(asLines) {
-		return "", fmt.Errorf("line number %d exceeds lines in text", n)
-	}
-	asLines[n-1] = replaceWith // row counts start at 1
-	return strings.Join(asLines, "\n"), nil
-}
-
 // toLines breaks the current text selection to lines
 func toLines(text string) []string {
 	return strings.Split(text, "\n")
 }
 
 // replaceChunk replaces current selection in a piece of text with a given string
-func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, error) {
-	// Extract row to edit
-	rowNum := sel.CursorPosition.Row
-	rows, err := getSelectedRows(orig, sel)
-	if err != nil {
-		return "", err
-	}
-
-	// FIXME -- handle multiple rows
-	if len(rows) != 1 {
-		return "", fmt.Errorf("fixme: replaceChunk needs to handle multiple rows")
-	}
-	row := rows[0]
-
-	// Get start and end character positions
+func replaceChunk(text string, sel TextSelection, replaceWith string) (string, error) {
+	asLines := toLines(text)
 	selected := sel.Content
-	// If there is a selection, the cursor position is at the end.
-	// So, we count backwards to find the start position
-	end := sel.CursorPosition.Col - 1 // Cursor position, zero based
-	start := end - len(selected)      // Counting backwards to find the start of the selection
-
-	// Sanity checks
-	// -- cursor column position shouldn't exceed length of the row
-	if end > len(row) {
-		return "", fmt.Errorf("replace string failed: original cursor position exceeds content")
-	}
+	start, end := startAndEndPositions(sel)
+	rowNum := sel.CursorPosition.Row - 1
+	row := asLines[rowNum]
 	// -- row should contain the given string
 	if !strings.Contains(row, selected) {
 		return "", fmt.Errorf("replace string failed: original does not contain substring %s", selected)
 	}
 
-	pref := row[0:start]  // the chunk before the selection
-	mid := row[start:end] // this should equal our current selection
-	suffix := row[end:]   // the chunk after the selection
+	pref := row[0:start.Col]      // the chunk before the selection
+	mid := row[start.Col:end.Col] // this should equal our current selection
+	suffix := row[end.Col:]       // the chunk after the selection
 
 	// Sanity checks: middle chunk should be the current selection
 	if mid != selected {
@@ -345,6 +311,6 @@ func replaceChunk(orig string, sel TextSelection, replaceWith string) (string, e
 	}
 
 	// Replace the row with the substituted version
-	newRow := pref + replaceWith + suffix
-	return replaceNthLine(rowNum, orig, newRow)
+	asLines[rowNum] = pref + replaceWith + suffix
+	return strings.Join(asLines, "\n)"), nil
 }
