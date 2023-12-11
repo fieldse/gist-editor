@@ -152,9 +152,9 @@ func isMultiline(t TextSelection) bool {
 	return t.SelectionStart.Row == t.CursorPosition.Row
 }
 
-// replaceSelectionInLine replaces the selected segment of a text with the given string.
+// replaceSelection replaces the selected segment of a text with the given string.
 // This will fail if the selection is multiple line
-func replaceSelectionInLine(text string, selection TextSelection, replaceWith string) (string, error) {
+func replaceSelection(text string, selection TextSelection, replaceWith string) (string, error) {
 	if isMultiline(selection) {
 		return "", fmt.Errorf("multiple line selection not supported")
 	}
@@ -165,21 +165,21 @@ func replaceSelectionInLine(text string, selection TextSelection, replaceWith st
 // (ie: "foo" becomes "**foo**"")
 func selectionToBold(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("**%s**", selection.Content)
-	return replaceChunk(orig, selection, replaceWith)
+	return replaceSelection(orig, selection, replaceWith)
 }
 
 // selectionToItalic adds Markdown italic styling to the current text selection:
 // (ie: "foo" becomes "_foo_"")
 func selectionToItalic(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("_%s_", selection.Content)
-	return replaceChunk(orig, selection, replaceWith)
+	return replaceSelection(orig, selection, replaceWith)
 }
 
 // selectionToStrikethrough adds Markdown strikethrough styling to the current text
 // selection: 	(ie: "foo" becomes "~~foo~~"")
 func selectionToStrikethrough(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("~~%s~~", selection.Content)
-	return replaceChunk(orig, selection, replaceWith)
+	return replaceSelection(orig, selection, replaceWith)
 }
 
 // These patterns will be assume as styling at the beginning of a row, and will be
@@ -278,18 +278,13 @@ func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 	return prefixSelectedRows(orig, selection, " - [ ] ")
 }
 
-// numLines returns a count of the rows in a text string
-// eg:	"foo\nbar" returns 2
-func numLines(t string) int {
-	return strings.Count(t, "\n") + 1
-}
-
 // toLines breaks the current text selection to lines
 func toLines(text string) []string {
 	return strings.Split(text, "\n")
 }
 
 // replaceChunk replaces current selection in a piece of text with a given string
+// TODO: unify this with replaceSelection
 func replaceChunk(text string, sel TextSelection, replaceWith string) (string, error) {
 	asLines := toLines(text)
 	selected := sel.Content

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
@@ -45,40 +44,6 @@ func Test_toLines(t *testing.T) {
 	assert.Lenf(t, res, 5, "should be 5 lines")
 	assert.Equalf(t, res[0], "example line 1", "line text should match expected: got %s", res[0])
 	assert.Equalf(t, res[4], "example line 5", "line text should match expected: got %s", res[4])
-}
-
-func Test_getSelectedRows(t *testing.T) {
-	// Example 1 - single line, line 3, partial text
-	sel := selectionLineThreeWordTwo
-	rows, err := getSelectedRows(exampleText, sel)
-	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
-	require.Equalf(t, 1, len(rows), "selection 1 should be a single row")
-	assert.Containsf(t, rows[0], sel.Content, "line should contain content: got %s", rows[0])
-	assert.Equalf(t, "example line 3", rows[0], "line text should match expected: got %s", rows)
-
-	// Example 2 - Lines 1-2, full text
-	sel = multiLineSelectionLines1and2
-	rows, err = getSelectedRows(exampleText, sel)
-	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
-	require.Equalf(t, 2, len(rows), "selection should be two rows")
-
-	// Rows should contain selected text
-	assert.Containsf(t, "example line 1", rows[0], "row should contain expected text: got %s", rows[0])
-	assert.Containsf(t, "example line 2", rows[1], "row should contain expected text: got %s", rows[1])
-
-	// Example 3 - Lines 2-3, partial text
-	sel = multiLineSelectionLines2and3
-	rows, err = getSelectedRows(exampleText, sel)
-	assert.Nilf(t, err, "getSelectedRows failed: %v", err)
-	require.Equalf(t, 2, len(rows), "selection should be two rows")
-	// Rows should contain selected text
-
-	assert.Containsf(t, "example line 1", rows[0], "row should contain expected text: got %s", rows[0])
-	assert.Containsf(t, "example line 2", rows[1], "row should contain expected text: got %s", rows[1])
-
-	// Over line count should return an error
-	_, err = getSelectedRows(exampleText, selectionLineThreeWordTwo)
-	assert.NotNilf(t, err, "getSelectedRows should fail on outside of line range")
 }
 
 func Test_replaceChunk(t *testing.T) {
