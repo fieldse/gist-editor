@@ -22,7 +22,7 @@ func New(e *MultiLineWidget) *widget.Toolbar {
 		logger.Fatal("load resources failed", err)
 	}
 	// Text editing functions to pass to the toolbar
-	actions := NewTextFunctions(e)
+	actions := newToolbarActions(e)
 
 	// Menu items
 	return widget.NewToolbar(
