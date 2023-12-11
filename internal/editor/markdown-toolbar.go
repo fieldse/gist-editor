@@ -14,13 +14,9 @@ type MarkdownToolbar struct {
 	Toolbar fyne.Widget
 }
 
-func (m MarkdownToolbar) New() *MarkdownToolbar {
-	return &MarkdownToolbar{}
-}
-
-// MarkdownToolbar returns toolbar component for the markdown text editor
-// Will throw error and exit program on failure
-func MarkdownToolbarUI(e *MultiLineWidget) *widget.Toolbar {
+// New returns a new toolbar component for the markdown text editor,
+// with attached functions and icons
+func New(e *MultiLineWidget) *widget.Toolbar {
 	icons, err := icons.ToolbarIcons{}.Load()
 	if err != nil {
 		logger.Fatal("load resources failed", err)

@@ -88,7 +88,7 @@ func editUI(cfg *AppConfig, g *github.Gist, w fyne.Window) (*fyne.Container, *ed
 	e := editor.NewMultilineWidget(g.Content)
 
 	// Text editor toolbar
-	textEditorToolbar := editor.MarkdownToolbarUI(e)
+	textEditorToolbar := editor.New(e)
 
 	// Top section -- edit toolbar & title
 	topBox := container.NewVBox(widget.NewLabel("Edit"), textEditorToolbar)
