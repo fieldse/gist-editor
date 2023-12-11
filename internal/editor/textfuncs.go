@@ -187,16 +187,17 @@ func selectionToStrikethrough(orig string, selection TextSelection) (string, err
 // FIXME: replace this simplistic pattern check with regex
 var rowPrefixes = []string{
 	"# ", "## ", "### ", "#### ", "##### ", // headings
-	" - [ ] ", " - [x] ", "- [ ] ", "- [x] ", // checklists
-	"- ", " - ", // ul lists
+	"- [ ] ", "- [x] ", // checklists
+	"- ",                                                                 // ul lists
 	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ", // ordered lists
 }
 
 // stripPrefixes strips common Markdown styling characters, such as h1, h2, bullets, checklist
 func stripPrefixes(s string) string {
+	stripped := strings.Trim(s, " ")
 	for _, x := range rowPrefixes {
-		if strings.HasPrefix(s, x) {
-			return strings.TrimPrefix(s, x)
+		if strings.HasPrefix(stripped, x) {
+			return strings.TrimPrefix(stripped, x)
 		}
 	}
 	return s

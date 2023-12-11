@@ -10,13 +10,22 @@ import (
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
 
 // Text selection from the above example text -- the word "line" from line 3
-var selectionLineThreeWordTwo = TextSelection{CursorPosition: Position{Row: 3, Col: 9}, Content: "line"}
+var selectionLineThreeWordTwo = TextSelection{
+	CursorPosition: Position{Row: 3, Col: 13},
+	SelectionStart: Position{Row: 3, Col: 9},
+	Content:        "line"}
 
 // Text selection from the above example text -- from beginning of line 1 to end of line 2
-var multiLineSelectionLines1and2 = TextSelection{CursorPosition: Position{Row: 2, Col: 15}, Content: "example line 1\nexample line 2"}
+var multiLineSelectionLines1and2 = TextSelection{
+	CursorPosition: Position{Row: 2, Col: 15},
+	SelectionStart: Position{Row: 1, Col: 1},
+	Content:        "example line 1\nexample line 2"}
 
 // Multiline selection from the above example text -- from "line" in line 2 to "example" in line 3
-var multiLineSelectionLines2and3 = TextSelection{CursorPosition: Position{Row: 3, Col: 8}, Content: "line 2\nexample"}
+var multiLineSelectionLines2and3 = TextSelection{
+	SelectionStart: Position{Row: 2, Col: 9},
+	CursorPosition: Position{Row: 3, Col: 8},
+	Content:        "line 2\nexample"}
 
 func Test_selectionToBold(t *testing.T) {
 	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
@@ -46,10 +55,10 @@ func Test_toLines(t *testing.T) {
 	assert.Equalf(t, res[4], "example line 5", "line text should match expected: got %s", res[4])
 }
 
-func Test_replaceChunk(t *testing.T) {
+func Test_replaceSelection(t *testing.T) {
 	expect := "example line 1\nexample line 2\nexample crazy chars 3\nexample line 4\nexample line 5"
-	res, err := replaceChunk(exampleText, selectionLineThreeWordTwo, "crazy chars")
-	assert.Nilf(t, err, "replacechunk failed: %v", err)
+	res, err := replaceSelection(exampleText, selectionLineThreeWordTwo, "crazy chars")
+	assert.Nilf(t, err, "replaceSelection failed: %v", err)
 	assert.Equalf(t, expect, res, "result doesn't match expected: got '%s'", res)
 }
 
