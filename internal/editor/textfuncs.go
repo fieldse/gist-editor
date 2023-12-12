@@ -283,7 +283,7 @@ func rowToH3(orig string, selection TextSelection) (string, error) {
 
 // rowToH4 adds an H4 styling prefix to the current row, replacing any existing style
 func rowToH4(orig string, selection TextSelection) (string, error) {
-	return prefixSelectedRows(orig, selection, "### ")
+	return prefixSelectedRows(orig, selection, "#### ")
 }
 
 // rowToUL adds an undordered list style to the current row, replacing any existing style

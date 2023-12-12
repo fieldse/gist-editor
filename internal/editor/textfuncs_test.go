@@ -46,6 +46,43 @@ func Test_startAndEndRows(t *testing.T) {
 	assert.Equal(t, y, 3, "expect start row to be 3: got %d", y)
 }
 
+func Test_rowToHeading(t *testing.T) {
+	cases := []string{
+		"example line 1\n# example line 2\n# example line 3\nexample line 4\nexample line 5",
+		"example line 1\n - example line 2\n - example line 3\nexample line 4\nexample line 5",
+		"example line 1\n - [ ] example line 2\n - [ ] example line 3\nexample line 4\nexample line 5",
+		"example line 1\n#### example line 2\n#### example line 3\nexample line 4\nexample line 5",
+	}
+	for _, c := range cases {
+
+		// Rows 2 and 3
+
+		// ...to H1
+		r, err := rowToH1(c, multiLineSelectionLines2and3)
+		expect := "example line 1\n# example line 2\n# example line 3\nexample line 4\nexample line 5"
+		assert.Nil(t, err)
+		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+
+		// ...to H2
+		r, err = rowToH2(c, multiLineSelectionLines2and3)
+		expect = "example line 1\n## example line 2\n## example line 3\nexample line 4\nexample line 5"
+		assert.Nil(t, err)
+		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+
+		// ...to H3
+		r, err = rowToH3(c, multiLineSelectionLines2and3)
+		expect = "example line 1\n### example line 2\n### example line 3\nexample line 4\nexample line 5"
+		assert.Nil(t, err)
+		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+
+		// ...to H4
+		r, err = rowToH4(c, multiLineSelectionLines2and3)
+		expect = "example line 1\n#### example line 2\n#### example line 3\nexample line 4\nexample line 5"
+		assert.Nil(t, err)
+		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+	}
+}
+
 func Test_selectionToBold(t *testing.T) {
 	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample **line** 3\nexample line 4\nexample line 5"
