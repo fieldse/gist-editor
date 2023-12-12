@@ -2,6 +2,7 @@
 package editor
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,19 +14,36 @@ var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 
 var selectionLineThreeWordTwo = TextSelection{
 	CursorPosition: Position{Row: 3, Col: 13},
 	SelectionStart: Position{Row: 3, Col: 9},
-	Content:        "line"}
+	Content:        "line",
+}
 
 // Text selection from the above example text -- from beginning of line 1 to end of line 2
 var multiLineSelectionLines1and2 = TextSelection{
 	CursorPosition: Position{Row: 2, Col: 15},
 	SelectionStart: Position{Row: 1, Col: 1},
-	Content:        "example line 1\nexample line 2"}
+	Content:        "example line 1\nexample line 2",
+}
 
 // Multiline selection from the above example text -- from "line" in line 2 to "example" in line 3
 var multiLineSelectionLines2and3 = TextSelection{
 	SelectionStart: Position{Row: 2, Col: 9},
 	CursorPosition: Position{Row: 3, Col: 8},
-	Content:        "line 2\nexample"}
+	Content:        "line 2\nexample",
+}
+
+func Test_startAndEndRows(t *testing.T) {
+	x, y := startAndEndRows(selectionLineThreeWordTwo)
+	assert.Equal(t, x, 3, "expect start row to be 3: got %d", x)
+	assert.Equal(t, y, 3, "expect start row to be 3: got %d", y)
+
+	x, y = startAndEndRows(multiLineSelectionLines1and2)
+	assert.Equal(t, x, 1, "expect start row to be 1: got %d", x)
+	assert.Equal(t, y, 2, "expect start row to be 2: got %d", y)
+
+	x, y = startAndEndRows(multiLineSelectionLines2and3)
+	assert.Equal(t, x, 2, "expect start row to be 2: got %d", x)
+	assert.Equal(t, y, 3, "expect start row to be 3: got %d", y)
+}
 
 func Test_selectionToBold(t *testing.T) {
 	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
@@ -100,72 +118,63 @@ func Test_stripPrefixes(t *testing.T) {
 	}
 }
 
-func Test_rowToH1(t *testing.T) {
-	var cases = []struct {
-		s          string
-		expect     string
-		contentStr string
+func Test_prefixSelectedRows(t *testing.T) {
+
+	// CASE 1: Change first three rows, with no existing prefixes
+	// (ie: plain format, no headings, etc.)
+
+	// Original text will be something like this:
+	text1 := "line 1\nline 2\nline 3\nline 4"
+
+	// Selection will be the first three lines, ending at first character of line 3
+	sel1 := TextSelection{
+		SelectionStart: Position{Row: 1, Col: 1},
+		CursorPosition: Position{Row: 3, Col: 1},
+		Content:        "line 1\nline 2",
+	}
+
+	// We're going to prefix each row of the selection with this:
+	prefix := "# "
+
+	// Expecting the result to change the first three rows, but not the last.
+	expectCase := fmt.Sprintf("%sline 1\n%sline 2\n%sline 3\nline 4", prefix, prefix, prefix)
+
+	res, err := prefixSelectedRows(text1, sel1, prefix)
+	assert.Nil(t, err)
+	assert.Equalf(t, expectCase, res, "expected %s, got %s", expectCase, res)
+
+	// CASE 2: Change first three rows, with existing style prefixes
+	// (ie: h1, list item, checklist item, ordered list item.)
+
+	// Original text will be something like this:
+	case2Items := []struct {
+		text    string
+		content string
 	}{
-		{
-			s:          "line 1\nline 2\nfoo\nline 4\nline 5",
-			contentStr: "line 1\nline 2\nline 3",
-			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
-		},
-		{
-			s:          "line 1\nline 2\n# line 3\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n# line 3",
-			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
-		},
-		{
-			s:          "line 1\nline 2\n## line 3\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n## line 3",
-			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
-		},
-		{
-			s:          "line 1\nline 2\n## line 3\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n## line 3",
-			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
-		},
-		{
-			s:          "line 1\nline 2\n### line 3\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n### line 3",
-			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
-		},
-		{
-			s:          "line 1\nline 2\n#### line 3\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n#### line 3",
-			expect:     "# line 1\n# line 2\n# line 3\n# line 4\nline5",
-		},
-		{
-			s:          "line 1\nline 2\n - line 3\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n - line 3",
-
-			expect: "line 1\nline 2\n# line 3\n# line 4\nline5",
-		},
-		{
-			s:          "line 1\nline 2\n - [ ] line 3\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n - [ ] line 3",
-
-			expect: "line 1\nline 2\n# line 3",
-		},
-		{
-			s:          "line 1\nline 2\n----bar\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n----bar",
-			expect:     "line 1\nline 2\n# ----bar\nline 4\nline 5",
-		},
-		{
-			s:          "line 1\nline 2\n#bar\nline 4\nline 5",
-			contentStr: "line 1\nline 2\n#bar",
-			expect:     "line 1\nline 2\n# #bar\nline 4\nline 5",
-		},
+		// h1 styled
+		{text: "# line 1\n# line 2\n# line 3\nline 4", content: "# line 1\n# line 2"},
+		// list item styled
+		{text: " - line 1\n - line 2\n - line 3\n line 4", content: " - line 1\n - line 2"},
+		// checklist item styled
+		{text: " - [ ] line 1\n - [ ] line 2\n - [ ] line 3\n line 4", content: " - [ ] line 1\n - [ ] line 2"},
+		// checklist item styled with no preceding spaces
+		{text: "- [ ] line 1\n- [ ] line 2\n- [ ] line 3\nline 4", content: "- [ ] line 1\n- [ ] line 2"},
+		// ordered list styled
+		{text: "1. line 1\n2. line 2\n3. line 3\nline 4", content: "1. line 1\n2. line 2"},
 	}
-	for _, x := range cases {
-		res, err := rowToH1(x.s, TextSelection{
-			CursorPosition: Position{Row: 4, Col: 1},
-			SelectionStart: Position{Row: 3, Col: 1},
-			Content:        x.contentStr,
-		})
+
+	for _, c := range case2Items {
+		// Expecting the result to change the first three rows, but not the last.
+
+		// Selection will be the first three lines, ending at first character of line 3
+		sel := TextSelection{
+			SelectionStart: Position{Row: 1, Col: 1},
+			CursorPosition: Position{Row: 3, Col: 1},
+			Content:        c.content,
+		}
+		res, err := prefixSelectedRows(c.text, sel, prefix)
 		assert.Nil(t, err)
-		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
+		assert.Equalf(t, expectCase, res, "expected %s, got %s", expectCase, res)
 	}
+
 }

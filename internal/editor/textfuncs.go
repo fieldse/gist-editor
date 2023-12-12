@@ -147,6 +147,12 @@ func startAndEndPositions(t TextSelection) (Position, Position) {
 	return curPos, selPos
 }
 
+// startAndEndRows the row range of a selection
+func startAndEndRows(t TextSelection) (int, int) {
+	start, end := startAndEndPositions(t)
+	return start.Row, end.Row
+}
+
 // isMultiline checks if a text selection spans multiple rows
 func isMultiline(t TextSelection) bool {
 	return t.SelectionStart.Row != t.CursorPosition.Row
@@ -244,9 +250,9 @@ func stripPrefixes(s string) string {
 //	prefix: '1. '  		result: "1. foo\n1. bar\n1. baz"
 func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (string, error) {
 	asRows := toLines(text)
-	start, end := startAndEndPositions(sel)
+	startRow, endRow := startAndEndRows(sel)
 	// Iterate by row, replacing the prefix
-	for i := start.Row; i <= end.Row; i++ {
+	for i := startRow; i <= endRow; i++ {
 		row := asRows[i-1]
 		asRows[i-1] = replacePrefix(row, newPrefix)
 	}
