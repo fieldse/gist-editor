@@ -291,6 +291,12 @@ func rowToUL(orig string, selection TextSelection) (string, error) {
 	return prefixSelectedRows(orig, selection, " - ")
 }
 
+// rowToOL adds an ordered list style to the current row, replacing any existing style
+func rowToOL(orig string, selection TextSelection) (string, error) {
+	// TODO: make this intelligently actually introduce numbered items.
+	return prefixSelectedRows(orig, selection, "1. ")
+}
+
 // rowToChecklistItem adds an checklist style prefix to the current row, replacing any existing style
 func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 	return prefixSelectedRows(orig, selection, " - [ ] ")

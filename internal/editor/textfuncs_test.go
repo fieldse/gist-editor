@@ -83,6 +83,37 @@ func Test_rowToHeading(t *testing.T) {
 	}
 }
 
+func Test_rowToListItem(t *testing.T) {
+	cases := []string{
+		"example line 1\n# example line 2\n# example line 3\nexample line 4\nexample line 5",
+		"example line 1\n - example line 2\n - example line 3\nexample line 4\nexample line 5",
+		"example line 1\n - [ ] example line 2\n - [ ] example line 3\nexample line 4\nexample line 5",
+		"example line 1\n#### example line 2\n#### example line 3\nexample line 4\nexample line 5",
+	}
+	for _, c := range cases {
+
+		// Rows 2 and 3
+
+		// ...to UL
+		r, err := rowToUL(c, multiLineSelectionLines2and3)
+		expect := "example line 1\n - example line 2\n - example line 3\nexample line 4\nexample line 5"
+		assert.Nil(t, err)
+		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+
+		// ...to checklist
+		r, err = rowToChecklistItem(c, multiLineSelectionLines2and3)
+		expect = "example line 1\n - [ ] example line 2\n - [ ] example line 3\nexample line 4\nexample line 5"
+		assert.Nil(t, err)
+		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+
+		// ...to OL item
+		r, err = rowToOL(c, multiLineSelectionLines2and3)
+		expect = "example line 1\n1. example line 2\n1. example line 3\nexample line 4\nexample line 5"
+		assert.Nil(t, err)
+		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+	}
+}
+
 func Test_selectionToBold(t *testing.T) {
 	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample **line** 3\nexample line 4\nexample line 5"
