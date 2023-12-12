@@ -88,8 +88,7 @@ func (e *toolbarActions) UL() {
 
 // OL styles the current row as ordered list item
 func (e *toolbarActions) OL() {
-	logger.Debug("placeholder for OL action")
-	// TODO
+	e.doTextOperation(rowToOL)
 }
 
 // Checklist styles the current row as a checklist item
