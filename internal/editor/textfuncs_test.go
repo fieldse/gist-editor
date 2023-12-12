@@ -11,6 +11,13 @@ import (
 
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
 
+// Empty text selection -- cursor at 1,1
+var emptyTextSelection = TextSelection{
+	CursorPosition: Position{Row: 1, Col: 1},
+	SelectionStart: Position{Row: 1, Col: 1},
+	Content:        "",
+}
+
 // Text selection from the above example text -- the word "line" from line 3
 var selectionLineThreeWordTwo = TextSelection{
 	CursorPosition: Position{Row: 3, Col: 13},
@@ -111,6 +118,36 @@ func Test_rowToListItem(t *testing.T) {
 		expect = "example line 1\n1. example line 2\n1. example line 3\nexample line 4\nexample line 5"
 		assert.Nil(t, err)
 		assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
+	}
+}
+
+func Test_insertRowBeforeSelection(t *testing.T) {
+
+	var cases = []struct {
+		sel    TextSelection
+		expect string
+	}{
+		// Insert before single line selection row 3
+		{
+			sel:    selectionLineThreeWordTwo,
+			expect: "example line 1\nexample line 2\nFOOBAR\nexample line 3\nexample line 4\nexample line 5",
+		},
+		// Insert before multiline selection rows 2-3
+		{
+			sel:    multiLineSelectionLines2and3,
+			expect: "example line 1\nFOOBAR\nexample line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+		// Insert before empty text selection
+		{
+			sel:    emptyTextSelection,
+			expect: "FOOBAR\nexample line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+	}
+
+	for _, c := range cases {
+		r, err := insertRowBeforeSelection(exampleText, c.sel, "FOOBAR")
+		assert.Nil(t, err)
+		assert.Equalf(t, c.expect, r, "insert row before selection: expected '%s', got '%s'", c.expect, r)
 	}
 }
 

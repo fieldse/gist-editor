@@ -157,6 +157,22 @@ func isMultiline(t TextSelection) bool {
 	return t.SelectionStart.Row != t.CursorPosition.Row
 }
 
+// insertRowBeforeSelection insert a row of text in before the beginning of the
+// current selection row
+func insertRowBeforeSelection(text string, sel TextSelection, toInsert string) (string, error) {
+	startRow, _ := startAndEndRows(sel)
+	rows := toLines(text)
+	if startRow > len(rows) {
+		return "", fmt.Errorf("text selection exceeds row count")
+	}
+	i := startRow - 1 // Row count starts at 1; index starts at 0, and we're inserting one before
+	if i < 0 {
+		return "", fmt.Errorf("row index below zero")
+	}
+	var newRows []string = append(rows[:i], append([]string{toInsert}, rows[i:]...)...)
+	return strings.Join(newRows, "\n"), nil
+}
+
 // replaceSelection replaces the selected segment of a text with the given string.
 // This will fail if the selection is multiple line
 func replaceSelection(text string, sel TextSelection, replaceWith string) (string, error) {
