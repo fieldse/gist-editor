@@ -254,7 +254,8 @@ func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (strin
 	// Iterate by row, replacing the prefix
 	for i := startRow; i <= endRow; i++ {
 		row := asRows[i-1]
-		asRows[i-1] = replacePrefix(row, newPrefix)
+		prefixed := replacePrefix(row, newPrefix)
+		asRows[i-1] = prefixed
 	}
 	return strings.Join(asRows, "\n"), nil
 }

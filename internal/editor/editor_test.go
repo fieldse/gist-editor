@@ -37,7 +37,7 @@ func Test_SelectionStart(t *testing.T) {
 	// Get selection start position
 	pos := e.SelectionStart()
 
-	// With no selection active, fyne returns 0,0
-	assert.Equal(t, 0, pos.Row, "selection row should be negative")
-	assert.Equal(t, 0, pos.Col, "selection col should be negative")
+	// With no selection active, selection cursor should be at 1,1
+	assert.Equal(t, 1, pos.Row, "no selection - selection row position should be 1")
+	assert.Equal(t, 1, pos.Col, "no selection - selection col position should be 1")
 }

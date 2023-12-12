@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/fieldse/gist-editor/internal/logger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -152,18 +153,34 @@ func Test_prefixSelectedRows(t *testing.T) {
 		content string
 	}{
 		// h1 styled
-		{text: "# line 1\n# line 2\n# line 3\nline 4", content: "# line 1\n# line 2"},
+		{
+			text:    "# line 1\n# line 2\n# line 3\nline 4",
+			content: "# line 1\n# line 2",
+		},
 		// list item styled
-		{text: " - line 1\n - line 2\n - line 3\n line 4", content: " - line 1\n - line 2"},
+		{
+			text:    " - line 1\n - line 2\n - line 3\nline 4",
+			content: " - line 1\n - line 2",
+		},
 		// checklist item styled
-		{text: " - [ ] line 1\n - [ ] line 2\n - [ ] line 3\n line 4", content: " - [ ] line 1\n - [ ] line 2"},
+		{
+			text:    " - [ ] line 1\n - [ ] line 2\n - [ ] line 3\nline 4",
+			content: " - [ ] line 1\n - [ ] line 2",
+		},
 		// checklist item styled with no preceding spaces
-		{text: "- [ ] line 1\n- [ ] line 2\n- [ ] line 3\nline 4", content: "- [ ] line 1\n- [ ] line 2"},
+		{
+			text:    "- [ ] line 1\n- [ ] line 2\n- [ ] line 3\nline 4",
+			content: "- [ ] line 1\n- [ ] line 2",
+		},
 		// ordered list styled
-		{text: "1. line 1\n2. line 2\n3. line 3\nline 4", content: "1. line 1\n2. line 2"},
+		{
+			text:    "1. line 1\n2. line 2\n3. line 3\nline 4",
+			content: "1. line 1\n2. line 2",
+		},
 	}
 
-	for _, c := range case2Items {
+	for i, c := range case2Items {
+		logger.Debug("=== TEST CASE [%d/%d] -- '%s'", i+1, len(case2Items), c.content)
 		// Expecting the result to change the first three rows, but not the last.
 
 		// Selection will be the first three lines, ending at first character of line 3
@@ -174,7 +191,7 @@ func Test_prefixSelectedRows(t *testing.T) {
 		}
 		res, err := prefixSelectedRows(c.text, sel, prefix)
 		assert.Nil(t, err)
-		assert.Equalf(t, expectCase, res, "expected %s, got %s", expectCase, res)
+		assert.Equalf(t, expectCase, res, "expected '%s', got '%s'", expectCase, res)
 	}
 
 }
