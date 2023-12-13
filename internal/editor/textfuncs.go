@@ -112,12 +112,11 @@ func (e *toolbarActions) QuoteBlock() {
 // CodeBlock styles the current selection as a code block
 func (e *toolbarActions) CodeBlock() {
 	logger.Debug("placeholder for CodeBlock action")
-	// TODO
 }
 
 // PageBreak inserts a page break at the current position
 func (e *toolbarActions) PageBreak() {
-	// TODO
+	e.doTextOperation(insertPageBreak)
 }
 
 // Undo the most recent changes to the text content
@@ -155,6 +154,11 @@ func startAndEndRows(t TextSelection) (int, int) {
 // isMultiline checks if a text selection spans multiple rows
 func isMultiline(t TextSelection) bool {
 	return t.SelectionStart.Row != t.CursorPosition.Row
+}
+
+// insertPageBreak inserts a Markdown page break (-----) before the current selection row
+func insertPageBreak(text string, sel TextSelection) (string, error) {
+	return insertRowBeforeSelection(text, sel, "-----")
 }
 
 // insertRowBeforeSelection insert a row of text in before the beginning of the

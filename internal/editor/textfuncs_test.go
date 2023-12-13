@@ -121,6 +121,36 @@ func Test_rowToListItem(t *testing.T) {
 	}
 }
 
+func Test_insertPageBreak(t *testing.T) {
+
+	var cases = []struct {
+		sel    TextSelection
+		expect string
+	}{
+		// Insert before single line selection row 3
+		{
+			sel:    selectionLineThreeWordTwo,
+			expect: "example line 1\nexample line 2\n-----\nexample line 3\nexample line 4\nexample line 5",
+		},
+		// Insert before multiline selection rows 2-3
+		{
+			sel:    multiLineSelectionLines2and3,
+			expect: "example line 1\n-----\nexample line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+		// Insert before empty text selection
+		{
+			sel:    emptyTextSelection,
+			expect: "-----\nexample line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+	}
+
+	for _, c := range cases {
+		r, err := insertPageBreak(exampleText, c.sel)
+		assert.Nil(t, err)
+		assert.Equalf(t, c.expect, r, "insert page break: expected '%s', got '%s'", c.expect, r)
+	}
+}
+
 func Test_insertRowBeforeSelection(t *testing.T) {
 
 	var cases = []struct {
