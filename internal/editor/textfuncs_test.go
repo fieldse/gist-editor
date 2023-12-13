@@ -19,7 +19,7 @@ var emptyTextSelection = TextSelection{
 }
 
 // Text selection from the above example text -- the word "line" from line 3
-var selectionLineThreeWordTwo = TextSelection{
+var singleLineSelectionLineThreeWordTwo = TextSelection{
 	CursorPosition: Position{Row: 3, Col: 13},
 	SelectionStart: Position{Row: 3, Col: 9},
 	Content:        "line",
@@ -40,7 +40,7 @@ var multiLineSelectionLines2and3 = TextSelection{
 }
 
 func Test_startAndEndRows(t *testing.T) {
-	x, y := startAndEndRows(selectionLineThreeWordTwo)
+	x, y := startAndEndRows(singleLineSelectionLineThreeWordTwo)
 	assert.Equal(t, x, 3, "expect start row to be 3: got %d", x)
 	assert.Equal(t, y, 3, "expect start row to be 3: got %d", y)
 
@@ -129,7 +129,7 @@ func Test_insertPageBreak(t *testing.T) {
 	}{
 		// Insert before single line selection row 3
 		{
-			sel:    selectionLineThreeWordTwo,
+			sel:    singleLineSelectionLineThreeWordTwo,
 			expect: "example line 1\nexample line 2\n-----\nexample line 3\nexample line 4\nexample line 5",
 		},
 		// Insert before multiline selection rows 2-3
@@ -159,7 +159,7 @@ func Test_insertRowBeforeSelection(t *testing.T) {
 	}{
 		// Insert before single line selection row 3
 		{
-			sel:    selectionLineThreeWordTwo,
+			sel:    singleLineSelectionLineThreeWordTwo,
 			expect: "example line 1\nexample line 2\nFOOBAR\nexample line 3\nexample line 4\nexample line 5",
 		},
 		// Insert before multiline selection rows 2-3
@@ -181,22 +181,51 @@ func Test_insertRowBeforeSelection(t *testing.T) {
 	}
 }
 
+func Test_insertRowsBeforeAndAfter(t *testing.T) {
+	var cases = []struct {
+		sel    TextSelection
+		expect string
+	}{
+		// Single line 3 selection - should insert before and after 3
+		{
+			sel:    singleLineSelectionLineThreeWordTwo,
+			expect: "example line 1\nexample line 2\nFOOBAR\nexample line 3\nFOOBAR\nexample line 4\nexample line 5",
+		},
+		// Multiline selection, rows 2-3 - should insert before 2 and after 3
+		{
+			sel:    multiLineSelectionLines2and3,
+			expect: "example line 1\nFOOBAR\nexample line 2\nexample line 3\nFOOBAR\nexample line 4\nexample line 5",
+		},
+		// Empty text selection -- should insert around current cursor line
+		{
+			sel:    emptyTextSelection,
+			expect: "FOOBAR\nexample line 1\nFOOBAR\nexample line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+	}
+
+	for _, c := range cases {
+		r, err := insertRowsBeforeAndAfter(exampleText, c.sel, "FOOBAR")
+		assert.Nil(t, err)
+		assert.Equalf(t, c.expect, r, "insert row before selection: expected '%s', got '%s'", c.expect, r)
+	}
+}
+
 func Test_selectionToBold(t *testing.T) {
-	r, err := selectionToBold(exampleText, selectionLineThreeWordTwo)
+	r, err := selectionToBold(exampleText, singleLineSelectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample **line** 3\nexample line 4\nexample line 5"
 	assert.Nil(t, err)
 	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
 }
 
 func Test_selectionToItalic(t *testing.T) {
-	r, err := selectionToItalic(exampleText, selectionLineThreeWordTwo)
+	r, err := selectionToItalic(exampleText, singleLineSelectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample _line_ 3\nexample line 4\nexample line 5"
 	assert.Nil(t, err)
 	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
 }
 
 func Test_selectionToStrikethrough(t *testing.T) {
-	r, err := selectionToStrikethrough(exampleText, selectionLineThreeWordTwo)
+	r, err := selectionToStrikethrough(exampleText, singleLineSelectionLineThreeWordTwo)
 	expect := "example line 1\nexample line 2\nexample ~~line~~ 3\nexample line 4\nexample line 5"
 	assert.Nil(t, err)
 	assert.Equalf(t, expect, r, "replaced text should equal expected: got %v instead", r)
@@ -211,7 +240,7 @@ func Test_toLines(t *testing.T) {
 
 func Test_replaceSelection(t *testing.T) {
 	expect := "example line 1\nexample line 2\nexample crazy chars 3\nexample line 4\nexample line 5"
-	res, err := replaceSelection(exampleText, selectionLineThreeWordTwo, "crazy chars")
+	res, err := replaceSelection(exampleText, singleLineSelectionLineThreeWordTwo, "crazy chars")
 	assert.Nilf(t, err, "replaceSelection failed: %v", err)
 	assert.Equalf(t, expect, res, "result doesn't match expected: got '%s'", res)
 }

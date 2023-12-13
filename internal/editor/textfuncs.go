@@ -145,7 +145,7 @@ func startAndEndPositions(t TextSelection) (Position, Position) {
 	return curPos, selPos
 }
 
-// startAndEndRows the row range of a selection
+// startAndEndRows returns the start and end row numbers of a selection
 func startAndEndRows(t TextSelection) (int, int) {
 	start, end := startAndEndPositions(t)
 	return start.Row, end.Row
@@ -169,11 +169,39 @@ func insertRowBeforeSelection(text string, sel TextSelection, toInsert string) (
 	if startRow > len(rows) {
 		return "", fmt.Errorf("text selection exceeds row count")
 	}
-	i := startRow - 1 // Row count starts at 1; index starts at 0, and we're inserting one before
+	i := startRow - 1 // Row count starts at 1
 	if i < 0 {
 		return "", fmt.Errorf("row index below zero")
 	}
 	var newRows []string = append(rows[:i], append([]string{toInsert}, rows[i:]...)...)
+	return strings.Join(newRows, "\n"), nil
+}
+
+// insertRowsBeforeAndAfter inserts text string as rows both before and after the
+// current selection
+func insertRowsBeforeAndAfter(text string, sel TextSelection, toInsert string) (string, error) {
+	var newRows []string
+	startRow, endRow := startAndEndRows(sel)
+	rows := toLines(text)
+
+	// Start and end indexes
+	pre := startRow - 1
+	post := endRow + 1
+
+	// Validate row counts
+	if pre < 0 {
+		return "", fmt.Errorf("row index below zero")
+	}
+	if endRow > len(rows) {
+		return "", fmt.Errorf("selection end exceeds row count")
+	}
+	rowInsert := []string{toInsert} // the string to insert, as slice
+
+	first := append(rows[:pre], rowInsert...)   // first section plus first inserted row
+	mid := append(rows[pre:post], rowInsert...) // middle section plus second inserted row
+	last := rows[post:]                         // end section
+
+	newRows = append(first, append(mid, last...)...)
 	return strings.Join(newRows, "\n"), nil
 }
 
