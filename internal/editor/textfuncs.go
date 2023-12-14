@@ -156,10 +156,23 @@ func selectionToItalic(orig string, selection TextSelection) (string, error) {
 	return replaceSelection(orig, selection, replaceWith)
 }
 
+// selectionToLink inserts a Markdown link into the current text selection
+func selectionToLink(orig string, selection TextSelection) (string, error) {
+	replaceWith := fmt.Sprintf("[%s]()", selection.Content)
+	return replaceSelection(orig, selection, replaceWith)
+}
+
 // selectionToStrikethrough adds Markdown strikethrough styling to the current text
 // selection: 	(ie: "foo" becomes "~~foo~~"")
 func selectionToStrikethrough(orig string, selection TextSelection) (string, error) {
 	replaceWith := fmt.Sprintf("~~%s~~", selection.Content)
+	return replaceSelection(orig, selection, replaceWith)
+}
+
+// selectionToUnderline adds Markdown underline styling to the current text
+// selection: 	(ie: "foo" becomes "__foo__"")
+func selectionToUnderline(orig string, selection TextSelection) (string, error) {
+	replaceWith := fmt.Sprintf("__%s__", selection.Content)
 	return replaceSelection(orig, selection, replaceWith)
 }
 

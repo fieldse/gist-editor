@@ -16,6 +16,7 @@ type ToolbarIcons struct {
 	BoldIcon            fyne.Resource
 	ItalicIcon          fyne.Resource
 	LinkIcon            fyne.Resource
+	UnderlineIcon       fyne.Resource
 	ImageIcon           fyne.Resource
 	QuoteBlockIcon      fyne.Resource
 	CodeBlockIcon       fyne.Resource
@@ -56,6 +57,10 @@ func (t ToolbarIcons) Load() (ToolbarIcons, error) {
 	if err != nil {
 		return ToolbarIcons{}, err
 	}
+	underlineIcon, err := loadIconResource("underline.png")
+	if err != nil {
+		return ToolbarIcons{}, err
+	}
 	imageIcon, err := loadIconResource("image.png")
 	if err != nil {
 		return ToolbarIcons{}, err
@@ -88,6 +93,7 @@ func (t ToolbarIcons) Load() (ToolbarIcons, error) {
 		BoldIcon:            boldIcon,
 		ItalicIcon:          italicIcon,
 		LinkIcon:            linkIcon,
+		UnderlineIcon:       underlineIcon,
 		ImageIcon:           imageIcon,
 		QuoteBlockIcon:      quoteBlockIcon,
 		CodeBlockIcon:       codeBlockIcon,

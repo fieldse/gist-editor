@@ -22,6 +22,7 @@ var iconNames = []string{
 	"eraser.png",
 	"italic.png",
 	"link.png",
+	"underline.png",
 	"image.png",
 	"quote-block.png",
 	"code-block.png",

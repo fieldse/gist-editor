@@ -63,19 +63,24 @@ func (e *toolbarActions) Bold() {
 	doTextOperation(selectionToBold, e.editor)
 }
 
-// Italic styles the current selection as Italic
+// Italic styles the current selection as italic
 func (e *toolbarActions) Italic() {
 	doTextOperation(selectionToItalic, e.editor)
 }
 
-// Stikethrough styles the current selection as Stikethrough
+// Link styles the current selection as a link
+func (e *toolbarActions) Link() {
+	doTextOperation(selectionToLink, e.editor)
+}
+
+// Stikethrough styles the current selection as strikethrough
 func (e *toolbarActions) Stikethrough() {
 	doTextOperation(selectionToStrikethrough, e.editor)
 }
 
-// Link styles the current selection as a link
-func (e *toolbarActions) Link() {
-	doTextOperation(selectionToStrikethrough, e.editor)
+// Underline styles the current selection as underline
+func (e *toolbarActions) Underline() {
+	doTextOperation(selectionToUnderline, e.editor)
 }
 
 // UL styles the current row as unordered list item
