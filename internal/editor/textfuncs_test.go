@@ -382,5 +382,42 @@ func Test_insertToSlice(t *testing.T) {
 	// Try an out of bounds case, expect error
 	_, err := insertToSlice([]string{"a", "b", "c", "d", "e"}, "foo", 10)
 	assert.NotNil(t, err, "should return error on index over array length")
+}
+
+func Test_rowsToCodeBlock(t *testing.T) {
+	cases := []struct {
+		sel    TextSelection
+		text   string
+		expect string
+	}{
+		{
+			// Selection is empty but text content exists -- should wrap first row
+			text:   exampleText,
+			sel:    emptyTextSelection,
+			expect: "```\nexample line 1\n```\nexample line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+		{
+			// Selection and text content are empty -- should insert two code block rows
+			text:   "",
+			sel:    emptyTextSelection,
+			expect: "```\n```\n",
+		},
+		{
+			// Multiline selection -- wrap beginning and end
+			text:   exampleText,
+			sel:    multiLineSelectionLines1and2,
+			expect: "```\nexample line 1\nexample line 2\n```\nexample line 3\nexample line 4\nexample line 5",
+		},
+		{
+			text:   exampleText,
+			sel:    multiLineSelectionLines2and3,
+			expect: "example line 1\n```\nexample line 2\nexample line 3\n```\nexample line 4\nexample line 5",
+		},
+	}
+	for _, c := range cases {
+		res, err := rowsToCodeBlock(exampleText, c.sel)
+		require.Nil(t, err)
+		assert.Equalf(t, res, c.expect, "rowsToCodeBlock -- expected %v, got %v", res, c.expect)
+	}
 
 }

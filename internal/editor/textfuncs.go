@@ -93,7 +93,6 @@ func (e *toolbarActions) OL() {
 
 // Checklist styles the current row as a checklist item
 func (e *toolbarActions) Checklist() {
-	logger.Debug("placeholder for Checklist action")
 	e.doTextOperation(rowToChecklistItem)
 }
 
@@ -111,7 +110,7 @@ func (e *toolbarActions) QuoteBlock() {
 
 // CodeBlock styles the current selection as a code block
 func (e *toolbarActions) CodeBlock() {
-	logger.Debug("placeholder for CodeBlock action")
+	e.doTextOperation(rowsToCodeBlock)
 }
 
 // PageBreak inserts a page break at the current position
@@ -359,6 +358,11 @@ func rowToOL(orig string, selection TextSelection) (string, error) {
 // rowToChecklistItem adds an checklist style prefix to the current row, replacing any existing style
 func rowToChecklistItem(orig string, selection TextSelection) (string, error) {
 	return prefixSelectedRows(orig, selection, " - [ ] ")
+}
+
+// rowsToCodeBlock wraps the current selection in code blocks style
+func rowsToCodeBlock(orig string, selection TextSelection) (string, error) {
+	return wrapRows(orig, selection, "```")
 }
 
 // toLines breaks the current text selection to lines
