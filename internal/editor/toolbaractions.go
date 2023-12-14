@@ -101,8 +101,7 @@ func (e *toolbarActions) Image() {
 
 // QuoteBlock styles the current selection as a quote block
 func (e *toolbarActions) QuoteBlock() {
-	logger.Debug("placeholder for QuoteBlock action")
-	// TODO
+	e.doTextOperation(rowsToQuoteBlock)
 }
 
 // CodeBlock styles the current selection as a code block

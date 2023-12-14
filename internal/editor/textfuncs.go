@@ -257,6 +257,11 @@ func rowsToCodeBlock(orig string, selection TextSelection) (string, error) {
 	return wrapRows(orig, selection, "```")
 }
 
+// rowsToQuoteBlock prefixes current selected rows in quote style
+func rowsToQuoteBlock(orig string, selection TextSelection) (string, error) {
+	return prefixSelectedRows(orig, selection, " > ")
+}
+
 // toLines breaks the current text selection to lines
 func toLines(text string) []string {
 	return strings.Split(text, "\n")

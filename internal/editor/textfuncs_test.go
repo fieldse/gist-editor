@@ -414,12 +414,47 @@ func Test_rowsToCodeBlock(t *testing.T) {
 			expect: "example line 1\n```\nexample line 2\nexample line 3\n```\nexample line 4\nexample line 5",
 		},
 	}
-	for i, c := range cases {
-		fmt.Printf("=== DEBUG: TEST CASE [%d/%d] text: '%v'\n", i+1, len(cases), c.text)
+	for _, c := range cases {
 		res, err := rowsToCodeBlock(c.text, c.sel)
 		require.Nil(t, err)
 		require.Equalf(t, c.expect, res, "rowsToCodeBlock -- expected '%v', got '%v'", c.expect, res)
-		fmt.Printf("=== PASS: CASE [%d/%d] \n", i+1, len(cases))
 	}
+}
 
+func Test_rowsToQuoteBlock(t *testing.T) {
+	cases := []struct {
+		sel    TextSelection
+		text   string
+		expect string
+	}{
+		{
+			// Selection is empty but text content exists -- should style first row
+			text:   exampleText,
+			sel:    emptyTextSelection,
+			expect: " > example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+		{
+			// Selection and text content are empty -- return a single row with quote style
+			text:   "",
+			sel:    emptyTextSelection,
+			expect: " > ",
+		},
+		{
+			// Multiline selection -- should style rows two and three
+			text:   exampleText,
+			sel:    multiLineSelectionLines1and2,
+			expect: " > example line 1\n > example line 2\nexample line 3\nexample line 4\nexample line 5",
+		},
+		{
+			// Multiline selection -- should style rows one and two
+			text:   exampleText,
+			sel:    multiLineSelectionLines2and3,
+			expect: "example line 1\n > example line 2\n > example line 3\nexample line 4\nexample line 5",
+		},
+	}
+	for _, c := range cases {
+		res, err := rowsToQuoteBlock(c.text, c.sel)
+		require.Nil(t, err)
+		require.Equalf(t, c.expect, res, "rowsToQuoteBlock -- expected '%v', got '%v'", c.expect, res)
+	}
 }
