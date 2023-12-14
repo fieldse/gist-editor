@@ -184,8 +184,12 @@ func wrapRows(text string, sel TextSelection, toInsert string) (string, error) {
 	rows := toLines(text)
 
 	// Start and end indexes
-	pre := startRow - 1
-	post := endRow + 1
+	var pre, post int
+	pre = startRow - 1
+	post = endRow + 1
+	// if startRow == endRow { // if we're on a single line selection, ensure we append the last item
+	// 	post = pre
+	// }
 
 	// Validate row counts
 	if pre < 0 || post > len(rows)+1 {
@@ -209,9 +213,6 @@ func wrapRows(text string, sel TextSelection, toInsert string) (string, error) {
 func insertToSlice(arr []string, s string, index int) ([]string, error) {
 	if index > len(arr)+1 { // out of range
 		return []string{}, fmt.Errorf("insert to slice: index out of range")
-	}
-	if index == len(arr)+1 { // insert at last position equals append
-		return append(arr, []string{s}...), nil
 	}
 	return append(arr[0:index], append([]string{s}, arr[index:]...)...), nil
 }

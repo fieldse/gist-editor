@@ -414,10 +414,12 @@ func Test_rowsToCodeBlock(t *testing.T) {
 			expect: "example line 1\n```\nexample line 2\nexample line 3\n```\nexample line 4\nexample line 5",
 		},
 	}
-	for _, c := range cases {
-		res, err := rowsToCodeBlock(exampleText, c.sel)
+	for i, c := range cases {
+		fmt.Printf("=== DEBUG: TEST CASE [%d/%d] text: '%v'\n", i+1, len(cases), c.text)
+		res, err := rowsToCodeBlock(c.text, c.sel)
 		require.Nil(t, err)
-		assert.Equalf(t, res, c.expect, "rowsToCodeBlock -- expected %v, got %v", res, c.expect)
+		require.Equalf(t, c.expect, res, "rowsToCodeBlock -- expected '%v', got '%v'", c.expect, res)
+		fmt.Printf("=== PASS: CASE [%d/%d] \n", i+1, len(cases))
 	}
 
 }
