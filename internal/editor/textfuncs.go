@@ -177,38 +177,32 @@ func insertRowBeforeSelection(text string, sel TextSelection, toInsert string) (
 	return strings.Join(newRows, "\n"), nil
 }
 
-// insertRowsBeforeAndAfter inserts text string as rows both before and after the
+// wrapRows inserts text string as rows both before and after the
 // current selection
-func insertRowsBeforeAndAfter(text string, sel TextSelection, toInsert string) (string, error) {
+func wrapRows(text string, sel TextSelection, toInsert string) (string, error) {
 	var newRows []string
-
 	startRow, endRow := startAndEndRows(sel)
 	rows := toLines(text)
 
 	// Start and end indexes
 	pre := startRow - 1
-	post := endRow
+	post := endRow + 1
 
 	// Validate row counts
-	if pre < 0 {
-		return "", fmt.Errorf("row index below zero")
+	if pre < 0 || post > len(rows)+1 {
+		return "", fmt.Errorf("row index out of range")
 	}
-	if endRow > len(rows) {
-		return "", fmt.Errorf("selection end exceeds row count")
+	// Insert preceding row
+	newRows, err := insertToSlice(rows, toInsert, pre)
+	if err != nil {
+		return "", err
+	}
+	// Insert trailing row
+	newRows, err = insertToSlice(newRows, toInsert, post)
+	if err != nil {
+		return "", err
 	}
 
-	// the string to insert, as slice
-	rowInsert := []string{toInsert}
-	var first, mid, last []string
-
-	// Make copies to ensure we avoid modifying the original slices
-	copy(first, rows[:pre])
-	copy(mid, rows[pre:post])
-	copy(last, rows[post:])
-	first = append(first, rowInsert...)
-	mid = append(mid, rowInsert...)
-
-	newRows = append(first, append(mid, last...)...)
 	return strings.Join(newRows, "\n"), nil
 }
 
@@ -217,7 +211,7 @@ func insertToSlice(arr []string, s string, index int) ([]string, error) {
 	if index > len(arr)+1 { // out of range
 		return []string{}, fmt.Errorf("insert to slice: index out of range")
 	}
-	if index == len(arr)+1 { // insert at last position
+	if index == len(arr)+1 { // insert at last position equals append
 		return append(arr, []string{s}...), nil
 	}
 	return append(arr[0:index], append([]string{s}, arr[index:]...)...), nil

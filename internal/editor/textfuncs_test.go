@@ -7,6 +7,7 @@ import (
 
 	"github.com/fieldse/gist-editor/internal/logger"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var exampleText = "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5"
@@ -181,7 +182,7 @@ func Test_insertRowBeforeSelection(t *testing.T) {
 	}
 }
 
-func Test_insertRowsBeforeAndAfter(t *testing.T) {
+func Test_wrapRows(t *testing.T) {
 	var cases = []struct {
 		sel    TextSelection
 		expect string
@@ -204,8 +205,8 @@ func Test_insertRowsBeforeAndAfter(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		r, err := insertRowsBeforeAndAfter(exampleText, c.sel, "FOOBAR")
-		assert.Nil(t, err)
+		r, err := wrapRows(exampleText, c.sel, "FOOBAR")
+		require.Nil(t, err)
 		assert.Equalf(t, c.expect, r, "insert rows before and after selection: expected '%s', got '%s'", c.expect, r)
 	}
 }
