@@ -4,129 +4,7 @@ package editor
 import (
 	"fmt"
 	"strings"
-
-	"github.com/fieldse/gist-editor/internal/logger"
-	"github.com/fieldse/gist-editor/internal/shared"
 )
-
-type TextSelection = shared.TextSelection
-type Position = shared.Position
-
-// toolbarActions is the set of Markdown syntax operations that can be performed
-// on the editor text content
-type toolbarActions struct {
-	editor *MultiLineWidget
-}
-
-func newToolbarActions(m *MultiLineWidget) *toolbarActions {
-	return &toolbarActions{
-		editor: m,
-	}
-}
-
-// textOperation is any text manipulation operation against the editor text & selection
-type textOperation func(string, TextSelection) (string, error)
-
-// doTextOperation performs a text operation on the current text of the editor,
-// replacing its content with the result.
-func (e *toolbarActions) doTextOperation(f textOperation) error {
-	origText := e.editor.Content()
-	selection := e.editor.GetSelection()
-	newText, err := f(origText, selection)
-	if err != nil {
-		logger.Error("text operation failed", err)
-		return err
-	}
-	e.editor.SetContent(newText)
-	return nil
-}
-
-// H1 styles the current selection as H1
-func (e *toolbarActions) H1() {
-	e.doTextOperation(rowToH1)
-}
-
-// H2 styles the current selection as H2
-func (e *toolbarActions) H2() {
-	e.doTextOperation(rowToH2)
-}
-
-// H3 styles the current selection as H3
-func (e *toolbarActions) H3() {
-	e.doTextOperation(rowToH3)
-}
-
-// H4 styles the current selection as H4
-func (e *toolbarActions) H4() {
-	e.doTextOperation(rowToH4)
-}
-
-// Bold styles the current selection as Bold
-func (e *toolbarActions) Bold() {
-	e.doTextOperation(selectionToBold)
-}
-
-// Italic styles the current selection as Italic
-func (e *toolbarActions) Italic() {
-	e.doTextOperation(selectionToItalic)
-}
-
-// Stikethrough styles the current selection as Stikethrough
-func (e *toolbarActions) Stikethrough() {
-	e.doTextOperation(selectionToStrikethrough)
-}
-
-// Link styles the current selection as a link
-func (e *toolbarActions) Link() {
-	e.doTextOperation(selectionToStrikethrough)
-}
-
-// UL styles the current row as unordered list item
-func (e *toolbarActions) UL() {
-	e.doTextOperation(rowToUL)
-}
-
-// OL styles the current row as ordered list item
-func (e *toolbarActions) OL() {
-	e.doTextOperation(rowToOL)
-}
-
-// Checklist styles the current row as a checklist item
-func (e *toolbarActions) Checklist() {
-	e.doTextOperation(rowToChecklistItem)
-}
-
-// Image uploads and inserts an image at the current location
-func (e *toolbarActions) Image() {
-	logger.Debug("placeholder for Image action")
-	// TODO
-}
-
-// QuoteBlock styles the current selection as a quote block
-func (e *toolbarActions) QuoteBlock() {
-	logger.Debug("placeholder for QuoteBlock action")
-	// TODO
-}
-
-// CodeBlock styles the current selection as a code block
-func (e *toolbarActions) CodeBlock() {
-	e.doTextOperation(rowsToCodeBlock)
-}
-
-// PageBreak inserts a page break at the current position
-func (e *toolbarActions) PageBreak() {
-	e.doTextOperation(insertPageBreak)
-}
-
-// Undo the most recent changes to the text content
-func (e *toolbarActions) Undo() {
-	e.editor.Undo()
-}
-
-// Redo the most recent changes to the text content
-func (e *toolbarActions) Redo() {
-	e.editor.Redo()
-}
 
 // startAndEndPositions returns start and end positions of a selection
 func startAndEndPositions(t TextSelection) (Position, Position) {
@@ -220,6 +98,25 @@ func insertToSlice(arr []string, s string, index int) ([]string, error) {
 	return append(arr[0:index], append([]string{s}, arr[index:]...)...), nil
 }
 
+// replacePrefix adds a styling prefix to a text string, replacing any existing
+// Markdown heading or list styling.
+//
+// Example: given the following strings:
+//
+//	# foo
+//	- foo
+//	1. foo
+//	- [ ] foo
+//
+// Returns:
+//
+//	prefix: '#'         returns: 	# foo / # foo / # foo / # foo
+//	prefix: '1. '  		returns:    1. foo / 1. foo / 1. foo / 1. foo
+//	prefix: ' - '  		returns: 	 - foo /  - foo /  - foo /  - foo
+func replacePrefix(text string, newPrefix string) string {
+	return newPrefix + stripPrefixes(text) // strip existing tags and append the new one
+}
+
 // replaceSelection replaces the selected segment of a text with the given string.
 // This will fail if the selection is multiple line
 func replaceSelection(text string, sel TextSelection, replaceWith string) (string, error) {
@@ -297,15 +194,13 @@ func stripPrefixes(s string) string {
 // replaceRowPrefixes adds a prefix to a each row in a range from a text
 // This replaces any existing Markdown heading or list styling on the row.
 //
-//	Examples:
-//
-// Given text, selection spanning three rows:
+// Example: given a text with selection spanning three rows:
 //
 //	# foo
 //	- bar
 //	3. baz
 //
-// Results:
+// returns:
 //
 //	prefix: '#' 		result: "# foo\n# bar\n# baz"
 //	prefix: ' - '  		result: " - foo\n - bar\n - baz"
@@ -313,19 +208,12 @@ func stripPrefixes(s string) string {
 func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (string, error) {
 	asRows := toLines(text)
 	startRow, endRow := startAndEndRows(sel)
-	// Iterate by row, replacing the prefix
 	for i := startRow; i <= endRow; i++ {
 		row := asRows[i-1]
 		prefixed := replacePrefix(row, newPrefix)
 		asRows[i-1] = prefixed
 	}
 	return strings.Join(asRows, "\n"), nil
-}
-
-// replacePrefix adds a styling prefix to a text string, replacing any existing
-// Markdown heading or list styling.
-func replacePrefix(text string, newPrefix string) string {
-	return newPrefix + stripPrefixes(text) // strip existing tags and append the new one
 }
 
 // rowToH1 adds an H1 styling prefix to the current row, replacing any existing style
