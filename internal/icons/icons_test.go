@@ -1,5 +1,5 @@
 // tests for icons loading functions
-package ui
+package icons
 
 import (
 	"testing"
