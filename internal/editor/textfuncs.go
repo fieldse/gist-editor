@@ -6,26 +6,14 @@ import (
 	"strings"
 )
 
-// startAndEndPositions returns start and end positions of a selection
-func startAndEndPositions(t TextSelection) (Position, Position) {
-	curPos, selPos := t.CursorPosition, t.SelectionStart
-	if curPos.Row > selPos.Row {
-		return selPos, curPos
-	}
-	if curPos.Row < selPos.Row {
-		return curPos, selPos
-	}
-	// equal row, so compare columns
-	if curPos.Col > selPos.Col {
-		return selPos, curPos
-	}
-	return curPos, selPos
-}
-
-// startAndEndRows returns the start and end row numbers of a selection
-func startAndEndRows(t TextSelection) (int, int) {
-	start, end := startAndEndPositions(t)
-	return start.Row, end.Row
+// These patterns will be assume as styling at the beginning of a row, and will be
+// replaced during replaceRowPrefix operations.
+// FIXME: replace this simplistic pattern check with regex
+var MARKDOWN_ROW_PREFIXES = []string{
+	"# ", "## ", "### ", "#### ", "##### ", // headings
+	"- [ ] ", "- [x] ", // checklists
+	"- ",                                                                 // ul lists
+	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ", // ordered lists
 }
 
 // isMultiline checks if a text selection spans multiple rows
@@ -54,48 +42,37 @@ func insertRowBeforeSelection(text string, sel TextSelection, toInsert string) (
 	return strings.Join(newRows, "\n"), nil
 }
 
-// wrapRows inserts text string as rows both before and after the
-// current selection
-func wrapRows(text string, sel TextSelection, toInsert string) (string, error) {
-
-	// If it's an empty string, we just return a pair of wrapper strings as rows,
-	// with an additional newline
-	if text == "" {
-		return fmt.Sprintf("%s\n%s\n", toInsert, toInsert), nil
-	}
-	var newRows []string
-	startRow, endRow := startAndEndRows(sel)
-	rows := toLines(text)
-
-	// Start and end indexes
-	var pre, post int
-	pre = startRow - 1
-	post = endRow + 1
-
-	// Validate row counts
-	if pre < 0 || post > len(rows)+1 {
-		return "", fmt.Errorf("row index out of range")
-	}
-	// Insert preceding row
-	newRows, err := insertToSlice(rows, toInsert, pre)
-	if err != nil {
-		return "", err
-	}
-	// Insert trailing row
-	newRows, err = insertToSlice(newRows, toInsert, post)
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Join(newRows, "\n"), nil
-}
-
 // insertToSlice inserts an element into a slice of strings at the given index
 func insertToSlice(arr []string, s string, index int) ([]string, error) {
 	if index > len(arr)+1 { // out of range
 		return []string{}, fmt.Errorf("insert to slice: index out of range")
 	}
 	return append(arr[0:index], append([]string{s}, arr[index:]...)...), nil
+}
+
+// replaceRowPrefixes adds a prefix to a each row in a range from a text
+// This replaces any existing Markdown heading or list styling on the row.
+//
+// Example: given a text with selection spanning three rows:
+//
+//	# foo
+//	- bar
+//	3. baz
+//
+// returns:
+//
+//	prefix: '#' 		result: "# foo\n# bar\n# baz"
+//	prefix: ' - '  		result: " - foo\n - bar\n - baz"
+//	prefix: '1. '  		result: "1. foo\n1. bar\n1. baz"
+func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (string, error) {
+	asRows := toLines(text)
+	startRow, endRow := startAndEndRows(sel)
+	for i := startRow; i <= endRow; i++ {
+		row := asRows[i-1]
+		prefixed := replacePrefix(row, newPrefix)
+		asRows[i-1] = prefixed
+	}
+	return strings.Join(asRows, "\n"), nil
 }
 
 // replacePrefix adds a styling prefix to a text string, replacing any existing
@@ -170,20 +147,32 @@ func selectionToStrikethrough(orig string, selection TextSelection) (string, err
 	return replaceSelection(orig, selection, replaceWith)
 }
 
-// These patterns will be assume as styling at the beginning of a row, and will be
-// replaced during replaceRowPrefix operations.
-// FIXME: replace this simplistic pattern check with regex
-var rowPrefixes = []string{
-	"# ", "## ", "### ", "#### ", "##### ", // headings
-	"- [ ] ", "- [x] ", // checklists
-	"- ",                                                                 // ul lists
-	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ", // ordered lists
+// startAndEndPositions returns start and end positions of a selection
+func startAndEndPositions(t TextSelection) (Position, Position) {
+	curPos, selPos := t.CursorPosition, t.SelectionStart
+	if curPos.Row > selPos.Row {
+		return selPos, curPos
+	}
+	if curPos.Row < selPos.Row {
+		return curPos, selPos
+	}
+	// equal row, so compare columns
+	if curPos.Col > selPos.Col {
+		return selPos, curPos
+	}
+	return curPos, selPos
+}
+
+// startAndEndRows returns the start and end row numbers of a selection
+func startAndEndRows(t TextSelection) (int, int) {
+	start, end := startAndEndPositions(t)
+	return start.Row, end.Row
 }
 
 // stripPrefixes strips common Markdown styling characters, such as h1, h2, bullets, checklist
 func stripPrefixes(s string) string {
 	stripped := strings.Trim(s, " ")
-	for _, x := range rowPrefixes {
+	for _, x := range MARKDOWN_ROW_PREFIXES {
 		if strings.HasPrefix(stripped, x) {
 			return strings.TrimPrefix(stripped, x)
 		}
@@ -191,29 +180,45 @@ func stripPrefixes(s string) string {
 	return s
 }
 
-// replaceRowPrefixes adds a prefix to a each row in a range from a text
-// This replaces any existing Markdown heading or list styling on the row.
-//
-// Example: given a text with selection spanning three rows:
-//
-//	# foo
-//	- bar
-//	3. baz
-//
-// returns:
-//
-//	prefix: '#' 		result: "# foo\n# bar\n# baz"
-//	prefix: ' - '  		result: " - foo\n - bar\n - baz"
-//	prefix: '1. '  		result: "1. foo\n1. bar\n1. baz"
-func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (string, error) {
-	asRows := toLines(text)
-	startRow, endRow := startAndEndRows(sel)
-	for i := startRow; i <= endRow; i++ {
-		row := asRows[i-1]
-		prefixed := replacePrefix(row, newPrefix)
-		asRows[i-1] = prefixed
+// toLines breaks the current text selection to lines
+func toLines(text string) []string {
+	return strings.Split(text, "\n")
+}
+
+// wrapRows inserts text string as rows both before and after the
+// current selection
+func wrapRows(text string, sel TextSelection, toInsert string) (string, error) {
+
+	// If it's an empty string, we just return a pair of wrapper strings as rows,
+	// with an additional newline
+	if text == "" {
+		return fmt.Sprintf("%s\n%s\n", toInsert, toInsert), nil
 	}
-	return strings.Join(asRows, "\n"), nil
+	var newRows []string
+	startRow, endRow := startAndEndRows(sel)
+	rows := toLines(text)
+
+	// Start and end indexes
+	var pre, post int
+	pre = startRow - 1
+	post = endRow + 1
+
+	// Validate row counts
+	if pre < 0 || post > len(rows)+1 {
+		return "", fmt.Errorf("row index out of range")
+	}
+	// Insert preceding row
+	newRows, err := insertToSlice(rows, toInsert, pre)
+	if err != nil {
+		return "", err
+	}
+	// Insert trailing row
+	newRows, err = insertToSlice(newRows, toInsert, post)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Join(newRows, "\n"), nil
 }
 
 // rowToH1 adds an H1 styling prefix to the current row, replacing any existing style
@@ -260,9 +265,4 @@ func rowsToCodeBlock(orig string, selection TextSelection) (string, error) {
 // rowsToQuoteBlock prefixes current selected rows in quote style
 func rowsToQuoteBlock(orig string, selection TextSelection) (string, error) {
 	return prefixSelectedRows(orig, selection, " > ")
-}
-
-// toLines breaks the current text selection to lines
-func toLines(text string) []string {
-	return strings.Split(text, "\n")
 }
