@@ -39,5 +39,6 @@ func New(e *MultiLineWidget) *widget.Toolbar {
 		widget.NewToolbarAction(icons.PageBreakIcon, actions.PageBreak),
 		widget.NewToolbarAction(icons.UndoIcon, actions.Undo),
 		widget.NewToolbarAction(icons.RedoIcon, actions.Redo),
+		widget.NewToolbarAction(icons.ClearFormattingIcon, actions.ClearFormatting),
 	)
 }

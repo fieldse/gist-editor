@@ -16,8 +16,8 @@ var MARKDOWN_ROW_PREFIXES = []string{
 	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ", // ordered lists
 }
 
-// Markdown row prefixes extended set, including quote blocks and code blocks
-var MARKDOWN_PREFIXES_WITH_QUOTES = append(MARKDOWN_ROW_PREFIXES, " > ", "```")
+// Markdown row prefixes extended set, including quote blocks, code blocks, and line breaks
+var MARKDOWN_PREFIXES_EXTENDED = append(MARKDOWN_ROW_PREFIXES, " > ", "```", "-----")
 
 // clearFormatting clears any row styling (eg: h1, h2, checklist, list item, quote, code block)
 // from the selected text content
@@ -26,7 +26,7 @@ func clearFormatting(text string, sel TextSelection) (string, error) {
 	startRow, endRow := startAndEndRows(sel)
 	for i := startRow; i <= endRow; i++ {
 		row := asRows[i-1]
-		stripped := stripPrefixes(row, MARKDOWN_PREFIXES_WITH_QUOTES)
+		stripped := stripPrefixes(row, MARKDOWN_PREFIXES_EXTENDED)
 		asRows[i-1] = stripped
 	}
 	return strings.Join(asRows, "\n"), nil

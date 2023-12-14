@@ -19,6 +19,7 @@ var iconNames = []string{
 	"h2.png",
 	"h3.png",
 	"bold.png",
+	"eraser.png",
 	"italic.png",
 	"link.png",
 	"image.png",
