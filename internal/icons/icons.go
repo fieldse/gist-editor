@@ -1,5 +1,5 @@
 // Contains icons for the Markdown editor toolbar buttons
-package ui
+package icons
 
 import (
 	"fmt"
@@ -10,18 +10,20 @@ import (
 
 // ToolbarIcons is the set of icons for the Markdown editor toolbar
 type ToolbarIcons struct {
-	H1Icon         fyne.Resource
-	H2Icon         fyne.Resource
-	H3Icon         fyne.Resource
-	BoldIcon       fyne.Resource
-	ItalicIcon     fyne.Resource
-	LinkIcon       fyne.Resource
-	ImageIcon      fyne.Resource
-	QuoteBlockIcon fyne.Resource
-	CodeBlockIcon  fyne.Resource
-	PageBreakIcon  fyne.Resource
-	UndoIcon       fyne.Resource
-	RedoIcon       fyne.Resource
+	H1Icon              fyne.Resource
+	H2Icon              fyne.Resource
+	H3Icon              fyne.Resource
+	BoldIcon            fyne.Resource
+	ItalicIcon          fyne.Resource
+	LinkIcon            fyne.Resource
+	UnderlineIcon       fyne.Resource
+	ImageIcon           fyne.Resource
+	QuoteBlockIcon      fyne.Resource
+	CodeBlockIcon       fyne.Resource
+	PageBreakIcon       fyne.Resource
+	UndoIcon            fyne.Resource
+	RedoIcon            fyne.Resource
+	ClearFormattingIcon fyne.Resource
 }
 
 // Load icon resources and returns a populated ToolbarIcons instance
@@ -43,11 +45,19 @@ func (t ToolbarIcons) Load() (ToolbarIcons, error) {
 	if err != nil {
 		return ToolbarIcons{}, err
 	}
+	eraserIcon, err := loadIconResource("eraser.png")
+	if err != nil {
+		return ToolbarIcons{}, err
+	}
 	italicIcon, err := loadIconResource("italic.png")
 	if err != nil {
 		return ToolbarIcons{}, err
 	}
 	linkIcon, err := loadIconResource("link.png")
+	if err != nil {
+		return ToolbarIcons{}, err
+	}
+	underlineIcon, err := loadIconResource("underline.png")
 	if err != nil {
 		return ToolbarIcons{}, err
 	}
@@ -77,18 +87,20 @@ func (t ToolbarIcons) Load() (ToolbarIcons, error) {
 	}
 
 	return ToolbarIcons{
-		H1Icon:         h1Icon,
-		H2Icon:         h2Icon,
-		H3Icon:         h3Icon,
-		BoldIcon:       boldIcon,
-		ItalicIcon:     italicIcon,
-		LinkIcon:       linkIcon,
-		ImageIcon:      imageIcon,
-		QuoteBlockIcon: quoteBlockIcon,
-		CodeBlockIcon:  codeBlockIcon,
-		PageBreakIcon:  pageBreakIcon,
-		UndoIcon:       undoIcon,
-		RedoIcon:       redoIcon,
+		H1Icon:              h1Icon,
+		H2Icon:              h2Icon,
+		H3Icon:              h3Icon,
+		BoldIcon:            boldIcon,
+		ItalicIcon:          italicIcon,
+		LinkIcon:            linkIcon,
+		UnderlineIcon:       underlineIcon,
+		ImageIcon:           imageIcon,
+		QuoteBlockIcon:      quoteBlockIcon,
+		CodeBlockIcon:       codeBlockIcon,
+		PageBreakIcon:       pageBreakIcon,
+		UndoIcon:            undoIcon,
+		RedoIcon:            redoIcon,
+		ClearFormattingIcon: eraserIcon,
 	}, nil
 }
 

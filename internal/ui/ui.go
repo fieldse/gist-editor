@@ -13,7 +13,6 @@ type AppConfig struct {
 	MainWindow           MainWindow
 	ListWindow           *ListView
 	Editor               *Editor
-	RunUI                func()
 	CurrentFile          *GistFile
 	GithubConfig         *github.GithubConfig
 	GithubSettingsWindow *GithubSettingsWindow
@@ -53,9 +52,11 @@ func (cfg *AppConfig) MakeUI() {
 
 	// Create Github token modal
 	cfg.GithubSettingsWindow = GithubSettingsWindow{}.New(cfg)
+}
 
-	// Store the show window functions
-	cfg.RunUI = cfg.MainWindow.ShowAndRun
+// RunUI starts the application
+func (cfg *AppConfig) RunUI() {
+	cfg.MainWindow.ShowAndRun()
 }
 
 // Show the All Gists list view
@@ -82,7 +83,8 @@ func (cfg *AppConfig) Exit() {
 // NewFile opens a new empty markdown editor
 func (cfg *AppConfig) NewFile() {
 	cfg.MainWindow.SetCanSave(true)
-	g := github.Gist{}.New("New Gist.md", "Enter your content here...")
+	// g := github.Gist{}.New("New Gist.md", "Enter your content here...")
+	g := github.Gist{}.New("New Gist.md", "example line 1\nexample line 2\nexample line 3\nexample line 4\nexample line 5") // fixme: replace
 	cfg.CurrentFile = &GistFile{
 		isLocal:  true,
 		isOpen:   true,
@@ -121,13 +123,13 @@ func (cfg *AppConfig) CloseFile() {
 	cfg.Editor.Hide()
 }
 
-// ReadConfig reads and stores the config settings from the config file
-func (cfg *AppConfig) ReadConfig() {
-	cfg.GithubSettingsWindow.Load(cfg)
+// LoadConfig reads and stores the config settings from the config file
+func (cfg *AppConfig) LoadConfig() error {
+	return cfg.GithubSettingsWindow.Load(cfg)
 }
 
 func StartUI() {
 	cfg.MakeUI()
-	cfg.ReadConfig()
+	cfg.LoadConfig()
 	cfg.RunUI()
 }
