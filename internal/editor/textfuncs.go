@@ -179,6 +179,12 @@ func insertRowBeforeSelection(text string, sel TextSelection, toInsert string) (
 // wrapRows inserts text string as rows both before and after the
 // current selection
 func wrapRows(text string, sel TextSelection, toInsert string) (string, error) {
+
+	// If it's an empty string, we just return a pair of wrapper strings as rows,
+	// with an additional newline
+	if text == "" {
+		return fmt.Sprintf("%s\n%s\n", toInsert, toInsert), nil
+	}
 	var newRows []string
 	startRow, endRow := startAndEndRows(sel)
 	rows := toLines(text)
@@ -187,9 +193,6 @@ func wrapRows(text string, sel TextSelection, toInsert string) (string, error) {
 	var pre, post int
 	pre = startRow - 1
 	post = endRow + 1
-	// if startRow == endRow { // if we're on a single line selection, ensure we append the last item
-	// 	post = pre
-	// }
 
 	// Validate row counts
 	if pre < 0 || post > len(rows)+1 {
