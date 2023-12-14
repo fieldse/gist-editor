@@ -181,12 +181,13 @@ func insertRowBeforeSelection(text string, sel TextSelection, toInsert string) (
 // current selection
 func insertRowsBeforeAndAfter(text string, sel TextSelection, toInsert string) (string, error) {
 	var newRows []string
+
 	startRow, endRow := startAndEndRows(sel)
 	rows := toLines(text)
 
 	// Start and end indexes
 	pre := startRow - 1
-	post := endRow + 1
+	post := endRow
 
 	// Validate row counts
 	if pre < 0 {
@@ -195,14 +196,31 @@ func insertRowsBeforeAndAfter(text string, sel TextSelection, toInsert string) (
 	if endRow > len(rows) {
 		return "", fmt.Errorf("selection end exceeds row count")
 	}
-	rowInsert := []string{toInsert} // the string to insert, as slice
 
-	first := append(rows[:pre], rowInsert...)   // first section plus first inserted row
-	mid := append(rows[pre:post], rowInsert...) // middle section plus second inserted row
-	last := rows[post:]                         // end section
+	// the string to insert, as slice
+	rowInsert := []string{toInsert}
+	var first, mid, last []string
+
+	// Make copies to ensure we avoid modifying the original slices
+	copy(first, rows[:pre])
+	copy(mid, rows[pre:post])
+	copy(last, rows[post:])
+	first = append(first, rowInsert...)
+	mid = append(mid, rowInsert...)
 
 	newRows = append(first, append(mid, last...)...)
 	return strings.Join(newRows, "\n"), nil
+}
+
+// insertToSlice inserts an element into a slice of strings at the given index
+func insertToSlice(arr []string, s string, index int) ([]string, error) {
+	if index > len(arr)+1 { // out of range
+		return []string{}, fmt.Errorf("insert to slice: index out of range")
+	}
+	if index == len(arr)+1 { // insert at last position
+		return append(arr, []string{s}...), nil
+	}
+	return append(arr[0:index], append([]string{s}, arr[index:]...)...), nil
 }
 
 // replaceSelection replaces the selected segment of a text with the given string.

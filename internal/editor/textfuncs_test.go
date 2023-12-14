@@ -206,7 +206,7 @@ func Test_insertRowsBeforeAndAfter(t *testing.T) {
 	for _, c := range cases {
 		r, err := insertRowsBeforeAndAfter(exampleText, c.sel, "FOOBAR")
 		assert.Nil(t, err)
-		assert.Equalf(t, c.expect, r, "insert row before selection: expected '%s', got '%s'", c.expect, r)
+		assert.Equalf(t, c.expect, r, "insert rows before and after selection: expected '%s', got '%s'", c.expect, r)
 	}
 }
 
@@ -357,5 +357,29 @@ func Test_prefixSelectedRows(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equalf(t, expectCase, res, "expected '%s', got '%s'", expectCase, res)
 	}
+
+}
+
+func Test_insertToSlice(t *testing.T) {
+	cases := []struct {
+		s      string
+		index  int
+		expect []string
+	}{
+		{s: "foo", index: 0, expect: []string{"foo", "a", "b", "c", "d", "e"}},
+		{s: "foo", index: 1, expect: []string{"a", "foo", "b", "c", "d", "e"}},
+		{s: "foo", index: 4, expect: []string{"a", "b", "c", "d", "foo", "e"}},
+		{s: "foo", index: 5, expect: []string{"a", "b", "c", "d", "e", "foo"}},
+	}
+	for _, c := range cases {
+		arr := []string{"a", "b", "c", "d", "e"}
+		res, err := insertToSlice(arr, c.s, c.index)
+		assert.Nil(t, err)
+		assert.Equalf(t, res, c.expect, "insertToSlice -- expected %v, got %v", res, c.expect)
+	}
+
+	// Try an out of bounds case, expect error
+	_, err := insertToSlice([]string{"a", "b", "c", "d", "e"}, "foo", 10)
+	assert.NotNil(t, err, "should return error on index over array length")
 
 }
