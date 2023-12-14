@@ -24,73 +24,73 @@ func newToolbarActions(m *MultiLineWidget) *toolbarActions {
 // textOperation is any text manipulation operation against the editor text & selection
 type textOperation func(string, TextSelection) (string, error)
 
-// doTextOperation performs a text operation on the current text of the editor,
+// doTextOperation performs a text operation on the current text of an editor,
 // replacing its content with the result.
-func (e *toolbarActions) doTextOperation(f textOperation) error {
-	origText := e.editor.Content()
-	selection := e.editor.GetSelection()
+func doTextOperation(f textOperation, e *MultiLineWidget) error {
+	origText := e.Content()
+	selection := e.GetSelection()
 	newText, err := f(origText, selection)
 	if err != nil {
 		logger.Error("text operation failed", err)
 		return err
 	}
-	e.editor.SetContent(newText)
+	e.SetContent(newText)
 	return nil
 }
 
 // H1 styles the current selection as H1
 func (e *toolbarActions) H1() {
-	e.doTextOperation(rowToH1)
+	doTextOperation(rowToH1, e.editor)
 }
 
 // H2 styles the current selection as H2
 func (e *toolbarActions) H2() {
-	e.doTextOperation(rowToH2)
+	doTextOperation(rowToH2, e.editor)
 }
 
 // H3 styles the current selection as H3
 func (e *toolbarActions) H3() {
-	e.doTextOperation(rowToH3)
+	doTextOperation(rowToH3, e.editor)
 }
 
 // H4 styles the current selection as H4
 func (e *toolbarActions) H4() {
-	e.doTextOperation(rowToH4)
+	doTextOperation(rowToH4, e.editor)
 }
 
 // Bold styles the current selection as Bold
 func (e *toolbarActions) Bold() {
-	e.doTextOperation(selectionToBold)
+	doTextOperation(selectionToBold, e.editor)
 }
 
 // Italic styles the current selection as Italic
 func (e *toolbarActions) Italic() {
-	e.doTextOperation(selectionToItalic)
+	doTextOperation(selectionToItalic, e.editor)
 }
 
 // Stikethrough styles the current selection as Stikethrough
 func (e *toolbarActions) Stikethrough() {
-	e.doTextOperation(selectionToStrikethrough)
+	doTextOperation(selectionToStrikethrough, e.editor)
 }
 
 // Link styles the current selection as a link
 func (e *toolbarActions) Link() {
-	e.doTextOperation(selectionToStrikethrough)
+	doTextOperation(selectionToStrikethrough, e.editor)
 }
 
 // UL styles the current row as unordered list item
 func (e *toolbarActions) UL() {
-	e.doTextOperation(rowToUL)
+	doTextOperation(rowToUL, e.editor)
 }
 
 // OL styles the current row as ordered list item
 func (e *toolbarActions) OL() {
-	e.doTextOperation(rowToOL)
+	doTextOperation(rowToOL, e.editor)
 }
 
 // Checklist styles the current row as a checklist item
 func (e *toolbarActions) Checklist() {
-	e.doTextOperation(rowToChecklistItem)
+	doTextOperation(rowToChecklistItem, e.editor)
 }
 
 // Image uploads and inserts an image at the current location
@@ -101,17 +101,23 @@ func (e *toolbarActions) Image() {
 
 // QuoteBlock styles the current selection as a quote block
 func (e *toolbarActions) QuoteBlock() {
-	e.doTextOperation(rowsToQuoteBlock)
+	doTextOperation(rowsToQuoteBlock, e.editor)
 }
 
 // CodeBlock styles the current selection as a code block
 func (e *toolbarActions) CodeBlock() {
-	e.doTextOperation(rowsToCodeBlock)
+	doTextOperation(rowsToCodeBlock, e.editor)
 }
 
 // PageBreak inserts a page break at the current position
 func (e *toolbarActions) PageBreak() {
-	e.doTextOperation(insertPageBreak)
+	doTextOperation(insertPageBreak, e.editor)
+}
+
+// ClearFormatting clears any row styling (eg: h1, h2, checklist, list item, quote, code block)
+// from the selected text content
+func (e *toolbarActions) ClearFormatting() {
+	doTextOperation(clearFormatting, e.editor)
 }
 
 // Undo the most recent changes to the text content

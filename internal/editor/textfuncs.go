@@ -16,6 +16,22 @@ var MARKDOWN_ROW_PREFIXES = []string{
 	"1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9.", "10. ", // ordered lists
 }
 
+// Markdown row prefixes extended set, including quote blocks and code blocks
+var MARKDOWN_PREFIXES_WITH_QUOTES = append(MARKDOWN_ROW_PREFIXES, " > ", "```")
+
+// clearFormatting clears any row styling (eg: h1, h2, checklist, list item, quote, code block)
+// from the selected text content
+func clearFormatting(text string, sel TextSelection) (string, error) {
+	asRows := toLines(text)
+	startRow, endRow := startAndEndRows(sel)
+	for i := startRow; i <= endRow; i++ {
+		row := asRows[i-1]
+		stripped := stripPrefixes(row, MARKDOWN_PREFIXES_WITH_QUOTES)
+		asRows[i-1] = stripped
+	}
+	return strings.Join(asRows, "\n"), nil
+}
+
 // isMultiline checks if a text selection spans multiple rows
 func isMultiline(t TextSelection) bool {
 	return t.SelectionStart.Row != t.CursorPosition.Row
@@ -91,7 +107,7 @@ func prefixSelectedRows(text string, sel TextSelection, newPrefix string) (strin
 //	prefix: '1. '  		returns:    1. foo / 1. foo / 1. foo / 1. foo
 //	prefix: ' - '  		returns: 	 - foo /  - foo /  - foo /  - foo
 func replacePrefix(text string, newPrefix string) string {
-	return newPrefix + stripPrefixes(text) // strip existing tags and append the new one
+	return newPrefix + stripPrefixes(text, MARKDOWN_ROW_PREFIXES) // strip existing tags and append the new one
 }
 
 // replaceSelection replaces the selected segment of a text with the given string.
@@ -169,10 +185,10 @@ func startAndEndRows(t TextSelection) (int, int) {
 	return start.Row, end.Row
 }
 
-// stripPrefixes strips common Markdown styling characters, such as h1, h2, bullets, checklist
-func stripPrefixes(s string) string {
+// stripPrefixes strips the passed set of line prefixes
+func stripPrefixes(s string, prefixes []string) string {
 	stripped := strings.Trim(s, " ")
-	for _, x := range MARKDOWN_ROW_PREFIXES {
+	for _, x := range prefixes {
 		if strings.HasPrefix(stripped, x) {
 			return strings.TrimPrefix(stripped, x)
 		}

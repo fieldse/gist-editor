@@ -279,7 +279,7 @@ func Test_stripPrefixes(t *testing.T) {
 		{s: "#bar", expect: "#bar"},
 	}
 	for _, x := range cases {
-		res := stripPrefixes(x.s)
+		res := stripPrefixes(x.s, MARKDOWN_ROW_PREFIXES)
 		assert.Equalf(t, x.expect, res, "expected %s, got %s", x.expect, res)
 	}
 }
