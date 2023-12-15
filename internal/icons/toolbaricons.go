@@ -1,10 +1,10 @@
 // bundled icons for the toolbar
 
-package toolbaricons
+package icons
 
 import "fyne.io/fyne/v2"
 
-type ToolbarIcons = struct {
+type toolbarIcons = struct {
 	BoldIcon          *fyne.StaticResource
 	ChecklistIcon     *fyne.StaticResource
 	CodeBlockIcon     *fyne.StaticResource
@@ -32,7 +32,7 @@ type ToolbarIcons = struct {
 	UndoIcon          *fyne.StaticResource
 }
 
-var Icons ToolbarIcons = ToolbarIcons{
+var ToolbarIcons toolbarIcons = toolbarIcons{
 	BoldIcon:          resourceBoldPng,
 	ChecklistIcon:     resourceChecklistPng,
 	CodeBlockIcon:     resourceCodeBlockPng,
