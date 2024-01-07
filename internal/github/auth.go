@@ -1,11 +1,15 @@
 package github
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/fieldse/gist-editor/internal/logger"
 	"golang.org/x/oauth2"
@@ -95,4 +99,43 @@ func parseResponse(r *http.Response) (string, error) {
 		return "", fmt.Errorf("failed to unmarshal response JSON: %v", err)
 	}
 	return asJson.AccessToken, nil
+}
+
+func createOAuthLoginURL(w http.ResponseWriter, r *http.Request) {
+
+	// Create oauthState cookie
+	oauthState := generateStateOauthCookie(w)
+	u := oAuthGithubLogin.AuthCodeURL(oauthState)
+
+	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+}
+
+// generate a random state token to prevent XSRF attacks
+func generateStateToken() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
+}
+
+// TODO - make the OAuth request to GitHub
+// copied from https://github.com/douglasmakey/oauth2-example
+// Unsure what the code parameter is supposed to be
+func getAuthToken(code string) (string, error) {
+
+	// Use code to get token and get user info from Google.
+	token, err := oAuthGithubLogin.Exchange(context.Background(), code)
+	if err != nil {
+		return "", fmt.Errorf("oauth exchange failed: %v", err)
+	}
+	return token.AccessToken, nil
+}
+
+// generate a cookie to attach to the OAuth request
+func generateStateOauthCookie(w http.ResponseWriter) string {
+	var expiration = time.Now().Add(365 * 24 * time.Hour)
+	var state = generateStateToken() // random state token to prevent XSRF attacks
+	cookie := http.Cookie{Name: "oauthstate", Value: state, Expires: expiration}
+	http.SetCookie(w, &cookie)
+
+	return state
 }
