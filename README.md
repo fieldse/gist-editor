@@ -14,8 +14,9 @@ Install from source, or pull down the binary executables from Releases.
 
 ## Credits & Attributions
 
-- Icons by [Icon mania at Flaticon](https://www.flaticon.com/authors/icon-mania)
+- Markdown icons Icons by [Icon mania at Flaticon](https://www.flaticon.com/authors/icon-mania)
 - Quote icon from [FlatIcon](https://www.flaticon.com/free-icons/quote)
+- Github icon by [Icons8](https://icons8.com/icon/12598/github)
 
 ## License
 
