@@ -7,22 +7,27 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/fieldse/gist-editor/internal/logger"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
+
+// UserGithubAuthToken is the token we get back from the GitHub authorization request
+var UserGithubAuthToken string = ""
 
 // Client ID for github app
 const GithubAppID string = "b9cbbaa5e7c0f0644796"
 
 // Callback listener URL and port
-const TokenCallbackHostPort string = "http://127.0.0.1:9090"
+const TokenCallbackHostPort string = "127.0.0.1:9090"
 
+// OAuth struct for Github authorization
+// Details on required GitHub oauth scopes:
+// https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
 var oAuthGithubLogin = &oauth2.Config{
-	RedirectURL:  TokenCallbackHostPort + "/authorize",
+	RedirectURL:  fmt.Sprintf("http://%s/authorize", TokenCallbackHostPort),
 	ClientID:     os.Getenv("GITHUB_OAUTH_CLIENT_KEY"),
 	ClientSecret: os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"),
-	// Details on GitHub oauth scopes:
-	//  see https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
 	Scopes: []string{
 		"read:user",  // read user profile data
 		"user:email", // read user email
@@ -31,8 +36,8 @@ var oAuthGithubLogin = &oauth2.Config{
 	Endpoint: github.Endpoint,
 }
 
-// startCallbackListener starts the listener for the Github authorization callback
-func startCallbackListener() {
+// StartCallbackListener starts the listener for the Github authorization callback
+func StartCallbackListener() {
 	http.HandleFunc("/authorize", callbackHandler)
 
 	// Listen and serve on a specific port
@@ -40,9 +45,18 @@ func startCallbackListener() {
 }
 
 // callbackHandler handles the Github authorization request callback
+// Stores the token to UserGithubAuthToken on success.
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
-	// Process the callback request here
-	fmt.Fprintf(w, "Callback Received!")
+
+	// FIXME -- get the response somehow
+	var response = &http.Response{}
+	token, err := parseResponse(response)
+	if err != nil {
+		logger.Error("callback handler failed: %v", err)
+	}
+	// Fixme: do something with this
+	UserGithubAuthToken = token
+	logger.Info("callback handler succeeded: token received: %s", token)
 }
 
 // GithubTokenResponse is the JSON response from the authorize request
