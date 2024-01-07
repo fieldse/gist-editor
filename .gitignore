@@ -5,6 +5,9 @@
 # Mac OS stuff
 **/.DS_Store
 
+# Environment stuff
+github-client.env
+
 # Go stuff
 # Binaries for programs and plugins
 *.exe
