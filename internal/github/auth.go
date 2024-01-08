@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/pkg/browser"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -81,6 +82,11 @@ func StartServer() {
 func NewClient(token *oauth2.Token, r *http.Request) *http.Client {
 	ts := githubConfig.TokenSource(r.Context(), token)
 	return oauth2.NewClient(r.Context(), ts)
+}
+
+// OpenBrowser opens a new browser in the default system browser
+func OpenBrowser(url string) error {
+	return browser.OpenURL(url)
 }
 
 // generate a random state token to prevent XSRF attacks
