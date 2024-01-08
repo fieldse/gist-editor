@@ -16,8 +16,7 @@ import (
 )
 
 // GithubTokenResponse is the JSON response from the authorize request
-// expected format:
-// Accept: application/json
+// Expected format:
 //
 //	{
 //	  "access_token":"gho_16C7e42F292c6912E7710c838347Ae178B4a",
@@ -44,7 +43,7 @@ var (
 	GithubClientSecret = os.Getenv("GITHUB_OAUTH_CLIENT_SECRET")
 
 	// Unique state token passed at time of Oauth flow
-	stateToken string = generateStateToken()
+	stateToken string = ""
 
 	// GithubAuthToken is the token we get back from the GitHub authorization request
 	GithubAuthToken *oauth2.Token
@@ -64,118 +63,34 @@ const (
 
 var HostAndPort string = fmt.Sprintf("%s:%s", HostIP, HostPort)
 
-// OAuth struct for Github authorization
-// Details on required GitHub oauth scopes:
+// The permission scopes we need for the app
+// Details on GitHub oauth scopes:
 // https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
+var requiredGithubScopes []string = []string{
+	"read:user",  // read user profile data
+	"user:email", // read user email
+	"gist",       // write access to user gists
+}
+
+// OAuth struct for Github authorization
 var gitHubOAuthConfig = &oauth2.Config{
-	RedirectURL: fmt.Sprintf("http://%s/authorize", HostAndPort),
-	Scopes: []string{
-		"read:user",  // read user profile data
-		"user:email", // read user email
-		"gist",       // write access to user gists
-	},
+	RedirectURL: fmt.Sprintf("http://%s/%s", HostAndPort, urls.Authenticate),
+	Scopes: requiredGithubScopes
 	Endpoint: github.Endpoint,
 }
 
-// startServer starts the http server and listens for the configured endpoints.
-func startServer() {
-	http.HandleFunc("/", index)
-	http.HandleFunc("/oauth/github", startGithubOauth)
-	http.HandleFunc("/oauth2/receive", completeGithubOauth)
-	http.HandleFunc("/success", loginSuccessful)
+// StartServer starts the http server and listens for the configured endpoints.
+func StartServer() {
+	http.HandleFunc(urls.Index, index)
+	http.HandleFunc(urls.Authenticate, authenticate)
+	http.HandleFunc(urls.Callback, completeGithubOauth)
+	http.HandleFunc(urls.Success, loginSuccessful)
 
 	http.ListenAndServe(HostAndPort, nil)
 }
 
-// parseResponse parses the API response JSON and returns the access token
-func parseResponse(r *http.Response) (string, error) {
-	if r.StatusCode != 200 {
-		return "", fmt.Errorf("invalid API response code: %d", r.StatusCode)
-	}
-	if r.ContentLength <= 0 {
-		return "", fmt.Errorf("invalid API response length: %d", r.ContentLength)
-	}
-	// Read response to byte slice
-	var body []byte
-	_, err := r.Body.Read(body)
-	if err != nil {
-		return "", fmt.Errorf("unable to read response body: %v", err)
-	}
-	// Unmarshal JSON to struct
-	asJson := GithubTokenResponse{}
-	err = json.Unmarshal(body, &asJson)
-	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal response JSON: %v", err)
-	}
-	return asJson.AccessToken, nil
-}
-
-func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-</head>
-<body>
-	<form action="/oauth/github" method="post">
-		<input type="submit" value="Login with Github">
-	</form>
-</body>
-</html>`)
-}
-
-func loginSuccessful(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-</head>
-<body>
-	<h2>Login successful! You may now return to the application.</h2>
-</body>
-</html>`)
-}
-
-// startGithubOauth is a handler to start the authorization flow.
-// This creates a redirect response with the Auth URL and the following parameters:
-//   - response_type 	(optional)
-//   - client_id 		(required)
-//   - redirect_uri 	(optional: this is specified in Github oAuth app settings)
-//   - scope 			(optional: default is read public profile info)
-//   - state			(required: state token)
-func startGithubOauth(w http.ResponseWriter, r *http.Request) {
-	redirectURL := gitHubOAuthConfig.AuthCodeURL(stateToken)
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
-}
-
-// completeGithubOauth finishes the authorization flow
-func completeGithubOauth(w http.ResponseWriter, r *http.Request) {
-	code := r.FormValue("code")
-	state := r.FormValue("state")
-
-	// Check the received state code matches
-	if state != stateToken {
-		http.Error(w, "State is incorrect", http.StatusBadRequest)
-		return
-	}
-
-	// Exchange the code for a token
-	token, err := gitHubOAuthConfig.Exchange(r.Context(), code)
-	if err != nil {
-		http.Error(w, "login failed", http.StatusInternalServerError)
-		return
-	}
-
-	// Store the token for use later
-	logger.Info("github login successful: token stored %v", token)
-	GithubAuthToken = token
-	http.Redirect(w, r, "/success", http.StatusSeeOther)
-}
-
 // newClient returns a new http client with authorization from the given token
-func newClient(token *oauth2.Token, r *http.Request) *http.Client {
+func NewClient(token *oauth2.Token, r *http.Request) *http.Client {
 	ts := gitHubOAuthConfig.TokenSource(r.Context(), token)
 	return oauth2.NewClient(r.Context(), ts)
 }
@@ -186,7 +101,7 @@ func getUserData(client *http.Client) (GithubUserProfileData, error) {
 	// GraphQL query
 	// 	FIXME: convert this to REST API request
 	requestBody := strings.NewReader(`{"query": "query {viewer {id}}"}`)
-	resp, err := client.Post("https://api.github.com/graphql", "application/json", requestBody)
+	resp, err := client.Post(githubApiUrls.UserProfile, "application/json", requestBody)
 	if err != nil {
 		logger.Error("get user profile data failed", err)
 		return GithubUserProfileData{}, err
