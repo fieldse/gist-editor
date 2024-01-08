@@ -21,13 +21,6 @@ var urls = struct {
 	Success:      "/success",
 }
 
-// githubApiUrls are the REST API endpoints for the required Github data
-var githubApiUrls = struct {
-	UserProfile string
-}{
-	UserProfile: "https://api.github.com/graphql", // FIXME: this is graphql, not REST
-}
-
 // index serves the base link prompting the user to go authenticate.
 func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `<!DOCTYPE html>
@@ -68,7 +61,7 @@ func loginSuccessful(w http.ResponseWriter, r *http.Request) {
 //   - state			(required: state token)
 func authenticate(w http.ResponseWriter, r *http.Request) {
 	stateToken = generateStateToken()
-	redirectURL := gitHubOAuthConfig.AuthCodeURL(stateToken)
+	redirectURL := githubConfig.AuthCodeURL(stateToken)
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }
 
@@ -84,7 +77,7 @@ func completeGithubOauth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Exchange the code for a token
-	token, err := gitHubOAuthConfig.Exchange(r.Context(), code)
+	token, err := githubConfig.Exchange(r.Context(), code)
 	if err != nil {
 		http.Error(w, "login failed", http.StatusInternalServerError)
 		return

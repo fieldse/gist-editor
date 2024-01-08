@@ -3,14 +3,10 @@ package github
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
-	"time"
 
-	"github.com/fieldse/gist-editor/internal/logger"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -27,14 +23,6 @@ type GithubTokenResponse struct {
 	AccessToken string
 	Scope       string
 	TokenType   string
-}
-
-// Response from Github profile request
-type GithubUserProfileData struct {
-	Viewer struct { // FIXME
-		ID    string // JWT identifier
-		Email string
-	}
 }
 
 var (
@@ -73,10 +61,10 @@ var requiredGithubScopes []string = []string{
 }
 
 // OAuth struct for Github authorization
-var gitHubOAuthConfig = &oauth2.Config{
+var githubConfig = &oauth2.Config{
 	RedirectURL: fmt.Sprintf("http://%s/%s", HostAndPort, urls.Authenticate),
-	Scopes: requiredGithubScopes
-	Endpoint: github.Endpoint,
+	Scopes:      requiredGithubScopes,
+	Endpoint:    github.Endpoint,
 }
 
 // StartServer starts the http server and listens for the configured endpoints.
@@ -91,31 +79,8 @@ func StartServer() {
 
 // newClient returns a new http client with authorization from the given token
 func NewClient(token *oauth2.Token, r *http.Request) *http.Client {
-	ts := gitHubOAuthConfig.TokenSource(r.Context(), token)
+	ts := githubConfig.TokenSource(r.Context(), token)
 	return oauth2.NewClient(r.Context(), ts)
-}
-
-// getUserData fetches user basic profile data
-func getUserData(client *http.Client) (GithubUserProfileData, error) {
-
-	// GraphQL query
-	// 	FIXME: convert this to REST API request
-	requestBody := strings.NewReader(`{"query": "query {viewer {id}}"}`)
-	resp, err := client.Post(githubApiUrls.UserProfile, "application/json", requestBody)
-	if err != nil {
-		logger.Error("get user profile data failed", err)
-		return GithubUserProfileData{}, err
-	}
-	defer resp.Body.Close()
-
-	var p GithubUserProfileData
-	err = json.NewDecoder(resp.Body).Decode(&p)
-	if err != nil {
-		logger.Error("invalid Github response", err)
-		return GithubUserProfileData{}, err
-	}
-	return p, nil
-
 }
 
 // generate a random state token to prevent XSRF attacks
@@ -123,14 +88,4 @@ func generateStateToken() string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	return base64.URLEncoding.EncodeToString(b)
-}
-
-// generateExpiration returns a date one year from the current time
-func generateExpiration() time.Time {
-	return time.Now().Add(365 * 24 * time.Hour)
-}
-
-func storeGithubToken(token string) error {
-	// TODO -- store the token somewhere.
-	return fmt.Errorf("not yet implemented")
 }
